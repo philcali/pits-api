@@ -1,0 +1,175 @@
+---
+swagger: "2.0"
+info:
+  version: "2018-01-17T03:16:53Z"
+  title: "PITS"
+host: "example.com"
+basePath: "/v1"
+schemes:
+- "https"
+paths:
+  /auth:
+    get:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "query"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/AuthUrl"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+    post:
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Session"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+  /auth/{authType}:
+    get:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "authType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "code"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "error"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "nonce"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+  /me:
+    get:
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/User"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+      security:
+      - OAuthAuthorizer: []
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+securityDefinitions:
+  OAuthAuthorizer:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "custom"
+definitions:
+  Empty:
+    type: "object"
+    title: "Empty Schema"
+  User:
+    type: "object"
+    properties:
+      emailAddress:
+        type: "string"
+        format: "email"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      image:
+        type: "string"
+        format: "url"
+    title: "User schema"
+  AuthUrl:
+    type: "object"
+    properties:
+      authUrl:
+        type: "string"
+        format: "url"
+    title: "Auth URL schema"
+  Session:
+    type: "object"
+    properties:
+      accessToken:
+        type: "string"
+      refreshToken:
+        type: "string"
+      clientId:
+        type: "string"
+      expiresIn:
+        type: "integer"
+    title: "Session schema"
