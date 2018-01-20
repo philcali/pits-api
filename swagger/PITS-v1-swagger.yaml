@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "2018-01-17T03:16:53Z"
+  version: "2018-01-20T14:20:20Z"
   title: "PITS"
 host: "example.com"
 basePath: "/v1"
@@ -36,29 +36,12 @@ paths:
           headers:
             Access-Control-Allow-Origin:
               type: "string"
-    options:
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "200 response"
-          schema:
-            $ref: "#/definitions/Empty"
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
-  /auth/{authType}:
+  /auth/{type}:
     get:
       produces:
       - "application/json"
       parameters:
-      - name: "authType"
+      - name: "type"
         in: "path"
         required: true
         type: "string"
@@ -79,26 +62,71 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/Empty"
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-    options:
-      consumes:
-      - "application/json"
+  /devices:
+    get:
       produces:
       - "application/json"
       responses:
         200:
           description: "200 response"
           schema:
+            $ref: "#/definitions/DeviceList"
+      security:
+      - OAuthAuthorizer: []
+  /devices/{id}:
+    get:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Device"
+      security:
+      - OAuthAuthorizer: []
+  /devices/{id}/registration:
+    get:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/AuthUrl"
+    put:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "code"
+        in: "query"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "Device"
+        required: true
+        schema:
+          $ref: "#/definitions/Device"
+      responses:
+        200:
+          description: "200 response"
+          schema:
             $ref: "#/definitions/Empty"
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
   /me:
     get:
       produces:
@@ -113,23 +141,6 @@ paths:
               type: "string"
       security:
       - OAuthAuthorizer: []
-    options:
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "200 response"
-          schema:
-            $ref: "#/definitions/Empty"
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
 securityDefinitions:
   OAuthAuthorizer:
     type: "apiKey"
@@ -154,6 +165,19 @@ definitions:
         type: "string"
         format: "url"
     title: "User schema"
+  Device:
+    type: "object"
+    properties:
+      deviceId:
+        type: "string"
+      macAddress:
+        type: "string"
+      version:
+        type: "string"
+      lastUpdate:
+        type: "string"
+        format: "date-time"
+    title: "Device schema"
   AuthUrl:
     type: "object"
     properties:
@@ -161,6 +185,23 @@ definitions:
         type: "string"
         format: "url"
     title: "Auth URL schema"
+  DeviceList:
+    title: "Device List schema"
+    type: "array"
+    items:
+      $ref: "#/definitions/DeviceListItem"
+  DeviceListItem:
+    type: "object"
+    properties:
+      deviceId:
+        type: "string"
+      macAddress:
+        type: "string"
+      version:
+        type: "string"
+      lastUpdate:
+        type: "string"
+        format: "date-time"
   Session:
     type: "object"
     properties:
