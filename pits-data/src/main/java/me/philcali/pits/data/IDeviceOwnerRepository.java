@@ -1,24 +1,23 @@
 package me.philcali.pits.data;
 
-import java.util.List;
-
 import me.philcali.pits.data.model.IDeviceOwner;
 import me.philcali.pits.data.query.Filters;
 import me.philcali.pits.data.query.QueryParams;
+import me.philcali.pits.data.query.QueryResult;
 
 public interface IDeviceOwnerRepository {
     static final String OWNER_ID = "ownerId";
     static final String DEVICE_ID = "deviceId";
 
-    default List<IDeviceOwner> listDevicesByOwner(final String ownerId) {
+    default QueryResult<IDeviceOwner> listDevicesByOwner(final String ownerId) {
         return listItems(QueryParams.builder()
                 .withFilters(Filters.attribute(OWNER_ID).equalsTo(ownerId))
                 .build());
     }
 
-    List<IDeviceOwner> listItems(QueryParams params);
+    QueryResult<IDeviceOwner> listItems(QueryParams params);
 
-    default List<IDeviceOwner> listOwnersByDevice(final String deviceId) {
+    default QueryResult<IDeviceOwner> listOwnersByDevice(final String deviceId) {
         return listItems(QueryParams.builder()
                 .withFilters(Filters.attribute(DEVICE_ID).equalsTo(deviceId))
                 .build());

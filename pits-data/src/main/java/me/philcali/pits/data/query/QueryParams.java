@@ -1,20 +1,21 @@
 package me.philcali.pits.data.query;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class QueryParams {
     public static class Builder {
         private int maxSize = DEFAULT_MAX_SIZE;
         private IPageKey token;
-        private List<IFilter> filters = new ArrayList<>();
+        private Map<String, IFilter> filters = new ConcurrentHashMap<>();
 
         public QueryParams build() {
             return new QueryParams(this);
         }
 
-        public List<IFilter> getFilters() {
+        public Map<String, IFilter> getFilters() {
             return filters;
         }
 
@@ -27,12 +28,13 @@ public class QueryParams {
         }
 
         public Builder withFilters(final IFilter ... filters) {
-            Arrays.stream(filters).forEach(this.filters::add);
-            return this;
+            return withFilters(Arrays.asList(filters));
         }
 
         public Builder withFilters(final List<IFilter> filters) {
-            this.filters = filters;
+            filters.forEach(filter -> {
+                this.filters.put(filter.getAttribute(), filter);
+            });
             return this;
         }
 
@@ -55,7 +57,7 @@ public class QueryParams {
 
     private final IPageKey token;
     private final int maxSize;
-    private final List<IFilter> filters;
+    private final Map<String, IFilter> filters;
 
     public QueryParams(final Builder builder) {
         this.filters = builder.getFilters();
@@ -63,7 +65,7 @@ public class QueryParams {
         this.token = builder.getToken();
     }
 
-    public List<IFilter> getFilters() {
+    public Map<String, IFilter> getFilters() {
         return filters;
     }
 
