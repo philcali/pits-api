@@ -1,13 +1,15 @@
 package me.philcali.pits.service.model;
 
-public class CompleteAuthResponse {
-    private final String redirectUrl;
+import me.philcali.oauth.api.model.IExpiringToken;
 
-    public CompleteAuthResponse(final String redirectUrl) {
-        this.redirectUrl = redirectUrl;
+public class CompleteAuthResponse {
+    private final IExpiringToken session;
+
+    public CompleteAuthResponse(final IExpiringToken session) {
+        this.session = session;
     }
 
-    public String getRedirectUrl() {
-        return redirectUrl;
+    public IExpiringToken getSession() {
+        return session;
     }
 }

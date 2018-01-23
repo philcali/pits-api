@@ -21,9 +21,10 @@
   		<artifactId>pits-data</artifactId>
   		<version>${project.parent.version}</version>
   	</dependency>
-    <dependency>
-      	<groupId>com.amazonaws</groupId>
-      	<artifactId>aws-java-sdk-dynamodb</artifactId>
-    </dependency>
+  	<dependency>
+  		<groupId>${project.parent.groupId}</groupId>
+  		<artifactId>db-dynamo</artifactId>
+  		<version>${project.parent.version}</version>
+  	</dependency>
   </dependencies>
 </project>

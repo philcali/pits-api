@@ -11,12 +11,12 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.Table;
 
+import me.philcali.db.dynamo.BatchGetAdapter;
 import me.philcali.pits.data.IUserRepository;
 import me.philcali.pits.data.exception.UserRepositoryException;
 import me.philcali.pits.data.model.IDeviceOwner;
 import me.philcali.pits.data.model.IUser;
 import me.philcali.pits.dynamo.model.UserDynamo;
-import me.philcali.pits.dynamo.query.BatchGetAdapter;
 
 public class UserRepositoryDynamo implements IUserRepository {
     private final DynamoDB db;

@@ -11,12 +11,12 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.Table;
 
+import me.philcali.db.dynamo.BatchGetAdapter;
 import me.philcali.pits.data.IDeviceRepository;
 import me.philcali.pits.data.exception.DeviceRepositoryException;
 import me.philcali.pits.data.model.IDevice;
 import me.philcali.pits.data.model.IDeviceOwner;
 import me.philcali.pits.dynamo.model.DeviceDynamo;
-import me.philcali.pits.dynamo.query.BatchGetAdapter;
 
 public class DeviceRepository implements IDeviceRepository {
     private final DynamoDB db;

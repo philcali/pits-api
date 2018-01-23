@@ -1,9 +1,9 @@
 package me.philcali.pits.data;
 
+import me.philcali.db.api.Filters;
+import me.philcali.db.api.QueryParams;
+import me.philcali.db.api.QueryResult;
 import me.philcali.pits.data.model.IDeviceOwner;
-import me.philcali.pits.data.query.Filters;
-import me.philcali.pits.data.query.QueryParams;
-import me.philcali.pits.data.query.QueryResult;
 
 public interface IDeviceOwnerRepository {
     static final String OWNER_ID = "ownerId";

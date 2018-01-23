@@ -6,13 +6,13 @@ import com.amazonaws.SdkBaseException;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 
+import me.philcali.db.api.QueryParams;
+import me.philcali.db.api.QueryResult;
+import me.philcali.db.dynamo.QueryAdapter;
 import me.philcali.pits.data.IDeviceOwnerRepository;
 import me.philcali.pits.data.exception.DeviceOwnerRepositoryException;
 import me.philcali.pits.data.model.IDeviceOwner;
-import me.philcali.pits.data.query.QueryParams;
-import me.philcali.pits.data.query.QueryResult;
 import me.philcali.pits.dynamo.model.DeviceOwnerDynamo;
-import me.philcali.pits.dynamo.query.QueryAdapter;
 
 public class DeviceOwnerRepositoryDynamo implements IDeviceOwnerRepository {
     private final Table owners;
