@@ -26,7 +26,7 @@
   	</dependency>
   	<dependency>
   		<groupId>me.philcali.oauth</groupId>
-   		<artifactId>oauth-api</artifactId>
+   		<artifactId>oauth-spi</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
  	</dependency>
   	<dependency>
