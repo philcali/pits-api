@@ -1,6 +1,6 @@
 package me.philcali.pits.data;
 
-import me.philcali.db.api.Filters;
+import me.philcali.db.api.Conditions;
 import me.philcali.db.api.QueryParams;
 import me.philcali.db.api.QueryResult;
 import me.philcali.pits.data.model.IDeviceOwner;
@@ -11,7 +11,7 @@ public interface IDeviceOwnerRepository {
 
     default QueryResult<IDeviceOwner> listDevicesByOwner(final String ownerId) {
         return listItems(QueryParams.builder()
-                .withFilters(Filters.attribute(OWNER_ID).equalsTo(ownerId))
+                .withConditions(Conditions.attribute(OWNER_ID).equalsTo(ownerId))
                 .build());
     }
 
@@ -19,7 +19,7 @@ public interface IDeviceOwnerRepository {
 
     default QueryResult<IDeviceOwner> listOwnersByDevice(final String deviceId) {
         return listItems(QueryParams.builder()
-                .withFilters(Filters.attribute(DEVICE_ID).equalsTo(deviceId))
+                .withConditions(Conditions.attribute(DEVICE_ID).equalsTo(deviceId))
                 .build());
     }
 }
