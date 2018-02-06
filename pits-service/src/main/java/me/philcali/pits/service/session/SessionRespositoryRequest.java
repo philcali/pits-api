@@ -1,4 +1,4 @@
-package me.philcali.pits.service.request;
+package me.philcali.pits.service.session;
 
 import java.util.Optional;
 
@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import me.philcali.oauth.api.IClientConfigRepository;
 import me.philcali.oauth.api.ITokenRepository;
 import me.philcali.oauth.api.model.IUserClientConfig;
-import me.philcali.pits.service.model.ISessionRepository;
+import me.philcali.service.binding.request.IRequest;
 
 public class SessionRespositoryRequest implements ISessionRepository {
     private final IClientConfigRepository credentials;

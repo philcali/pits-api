@@ -19,8 +19,8 @@ import me.philcali.pits.data.model.transfer.User;
 import me.philcali.pits.service.ICompleteAuthService;
 import me.philcali.pits.service.model.CompleteAuthRequest;
 import me.philcali.pits.service.model.CompleteAuthResponse;
-import me.philcali.pits.service.model.ISessionRepository;
-import me.philcali.pits.service.response.UnauthorizedException;
+import me.philcali.pits.service.session.ISessionRepository;
+import me.philcali.service.binding.response.UnauthorizedException;
 
 @Singleton
 public class CompleteAuthServiceImpl implements ICompleteAuthService {

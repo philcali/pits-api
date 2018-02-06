@@ -1,4 +1,4 @@
-package me.philcali.pits.service.model;
+package me.philcali.pits.service.session;
 
 import java.util.Optional;
 

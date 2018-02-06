@@ -1,9 +1,16 @@
 package me.philcali.pits.service.model;
 
+import me.philcali.service.annotations.request.PathParam;
+import me.philcali.service.annotations.request.QueryParam;
+
 public class CompleteAuthRequest {
+    @QueryParam
     private String code;
+    @QueryParam
     private String error;
+    @PathParam
     private String type;
+    @QueryParam
     private String nonce;
 
     public String getCode() {

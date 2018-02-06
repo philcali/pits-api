@@ -1,10 +1,16 @@
 package me.philcali.pits.service.model;
 
 import me.philcali.pits.data.model.transfer.Device;
+import me.philcali.service.annotations.request.Body;
+import me.philcali.service.annotations.request.PathParam;
+import me.philcali.service.annotations.request.QueryParam;
 
 public class PutDeviceRegistrationRequest {
+    @QueryParam
     private String code;
+    @PathParam
     private String id;
+    @Body
     private Device device;
 
     public String getCode() {
