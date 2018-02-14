@@ -1,5 +1,6 @@
 package me.philcali.pits.dynamo;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.amazonaws.SdkBaseException;
@@ -15,6 +16,7 @@ import me.philcali.pits.data.exception.DeviceOwnerRepositoryException;
 import me.philcali.pits.data.model.IDeviceOwner;
 import me.philcali.pits.dynamo.model.DeviceOwnerDynamo;
 
+
 public class DeviceOwnerRepositoryDynamo implements IDeviceOwnerRepository {
     private final Table owners;
     private final IRetrievalStrategy query;
@@ -26,6 +28,12 @@ public class DeviceOwnerRepositoryDynamo implements IDeviceOwnerRepository {
     public DeviceOwnerRepositoryDynamo(final Table owners, final IRetrievalStrategy query) {
         this.owners = owners;
         this.query = query;
+    }
+
+    @Override
+    public Optional<IDeviceOwner> get(final String deviceId, final String ownerId) {
+        return Optional.ofNullable(owners.getItem(DEVICE_ID, deviceId, OWNER_ID, ownerId))
+                .map(DeviceOwnerDynamo::new);
     }
 
     @Override

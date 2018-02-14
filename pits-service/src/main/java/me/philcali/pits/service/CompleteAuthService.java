@@ -1,9 +1,8 @@
-package me.philcali.pits.service.impl;
+package me.philcali.pits.service;
 
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import me.philcali.oauth.api.IClientConfigRepository;
 import me.philcali.oauth.api.IExpiringAuthManager;
@@ -16,14 +15,14 @@ import me.philcali.oauth.spi.OAuthProviders;
 import me.philcali.pits.data.IUserRepository;
 import me.philcali.pits.data.model.IUser;
 import me.philcali.pits.data.model.transfer.User;
-import me.philcali.pits.service.ICompleteAuthService;
 import me.philcali.pits.service.model.CompleteAuthRequest;
 import me.philcali.pits.service.model.CompleteAuthResponse;
 import me.philcali.pits.service.session.ISessionRepository;
+import me.philcali.service.annotations.GET;
+import me.philcali.service.binding.IOperation;
 import me.philcali.service.binding.response.UnauthorizedException;
 
-@Singleton
-public class CompleteAuthServiceImpl implements ICompleteAuthService {
+public class CompleteAuthService implements IOperation<CompleteAuthRequest, CompleteAuthResponse> {
     private static final String CONSOLE_USER = "console:read";
 
     private final ITokenRepository tokens;
@@ -32,7 +31,7 @@ public class CompleteAuthServiceImpl implements ICompleteAuthService {
     private final IClientConfigRepository credentials;
 
     @Inject
-    public CompleteAuthServiceImpl(
+    public CompleteAuthService(
             final IUserRepository users,
             final INonceRepository nonces,
             final ITokenRepository tokens,
@@ -44,6 +43,7 @@ public class CompleteAuthServiceImpl implements ICompleteAuthService {
     }
 
     @Override
+    @GET("/auth/{type}")
     public CompleteAuthResponse apply(final CompleteAuthRequest request) {
         Optional.ofNullable(request.getError())
                 .map(UnauthorizedException::new)
