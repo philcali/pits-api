@@ -104,6 +104,7 @@ class Router:
     def filter(self):
         def wrapper(func):
             self.filters.append(func)
+            return func
         return wrapper
 
     def route(self, path, methods=["GET"]):
@@ -120,4 +121,5 @@ class Router:
                     logger.warn(f'Rule {rule} is already in use. Overwriting.')
                 setattr(func, 'path_names', path_parts)
                 self.routes[rule] = func
+            return func
         return wrapper
