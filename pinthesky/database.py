@@ -30,7 +30,8 @@ class Repository():
             table=None,
             fields_to_keys={},
             token_marshaller=EncryptedTokenMarshaller()) -> None:
-        self.__table = table if table is not None else app_context.resolve('GLOBAL')['table']
+        resolved = app_context.resolve('GLOBAL')['table']
+        self.__table = table if table is not None else resolved
         self.__type = type
         self.fields_to_keys = fields_to_keys
         self.tokens = token_marshaller
