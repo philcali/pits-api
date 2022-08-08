@@ -103,3 +103,46 @@ def get_captured_image_url(s3, bucket_name, image_prefix, thing_name):
         'expiresIn': expires_in,
         'url': url
     }
+
+
+@api.route("/cameras/:thing_name/configuration")
+def get_camera_configuration(iot_data, thing_name):
+    try:
+        thing_resp = iot_data.get_thing_shadow(
+            thingName=thing_name,
+            shadowName="pinthesky")
+        payload = json.loads(thing_resp['payload'].read())
+        return payload['state']['reported']['camera']
+    except ClientError as e:
+        if e.response['Code'] == 'ResourceNotFoundException':
+            response.status_code = 404
+            return {
+                "message": f'Configuration does not exist for {thing_name}'
+            }
+        raise
+
+
+@api.route("/cameras/:thing_name/configuration", methods=["POST"])
+def update_camera_configuration(iot_data, thing_name):
+    try:
+        configuration = json.loads(request.body)
+        payload = {
+            'state': {
+                'desired': {
+                    'camera': configuration
+                }
+            }
+        }
+        thing_resp = iot_data.update_thing_shadow(
+            thingName=thing_name,
+            shadowName="pinthesky",
+            payload=bytes(json.dumps(payload), encoding="utf8"))
+        rval = json.loads(thing_resp['payload'].read())
+        return rval['state']['desired']['camera']
+    except ClientError as e:
+        if e.response['Code'] == 'ResourceNotFoundException':
+            response.status_code = 404
+            return {
+                'message': f'Thing {thing_name} does not exist'
+            }
+        raise

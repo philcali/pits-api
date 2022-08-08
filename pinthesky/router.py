@@ -30,7 +30,8 @@ class Router:
                 match = re.search(pattern, raw_path)
                 if pattern == raw_path or match is not None:
                     logger.debug(f'Found {raw_path} for {pattern}')
-                    output = self.__dispatch_request(ctx, route, list(match.groups()))
+                    output = self.__dispatch_request(
+                        ctx, route, list(match.groups()))
                     return self.__dispatch_response(ctx, output)
         return {
             'statusCode': 404,
@@ -112,10 +113,10 @@ class Router:
             for method in methods:
                 path_parts = []
 
-                def replace_and_update(obj):
+                def replace_update(obj):
                     path_parts.append(obj.group(0).lstrip(':'))
                     return '([^/]+)'
-                new_path = '^' + re.sub(':[^/]+', replace_and_update, path) + '$'
+                new_path = '^' + re.sub(':[^/]+', replace_update, path) + '$'
                 rule = ':'.join([method.upper(), new_path])
                 if rule in self.routes:
                     logger.warn(f'Rule {rule} is already in use. Overwriting.')
