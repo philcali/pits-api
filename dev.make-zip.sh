@@ -6,7 +6,7 @@ function clean() {
 
 function clean_previous_builds() {
     local previous_build
-    for previous_build in $(ls -1 *.zip); do
+    for previous_build in $(find . -maxdepth 1 -name "*.zip"); do
         echo "Removing $previous_build"
         rm -f $previous_build
     done
@@ -35,7 +35,7 @@ function add_current_code() {
 }
 
 function main() {
-    local zip_name="build_function_$(date +%s).zip"
+    local zip_name="build_function.zip"
     clean_previous_builds
     clean
     setup_and_activate_venv
