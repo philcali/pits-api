@@ -51,6 +51,25 @@ def list_camera_groups(camera_group_data, thing_name):
     }
 
 
+@api.route('/cameras/:thing_name/videos')
+def list_camera_videos(motion_videos_data, thing_name):
+    limit = int(request.queryparams.get('limit', MAX_ITEMS))
+    limit = min(MAX_ITEMS, max(1, limit))
+    next_token = request.queryparams.get('nextToken', None)
+    sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
+    page = motion_videos_data.items(
+        request.account_id(),
+        thing_name,
+        params=QueryParams(
+            sort_ascending=sort_asc,
+            limit=limit,
+            next_token=next_token))
+    return {
+        'items': page.items,
+        'nextToken': page.next_token
+    }
+
+
 @api.route("/cameras/:thing_name/groups", methods=['POST'])
 def create_camera_groups(camera_group_data, group_camera_data, thing_name):
     input = json.loads(request.body)

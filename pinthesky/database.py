@@ -18,8 +18,8 @@ SortFilter = namedtuple(
     field_names=['name', 'method', 'values'])
 QueryParams = namedtuple(
     'QueryParams',
-    field_names=['limit', 'next_token', 'sort_filters'],
-    defaults=[100, None, []])
+    field_names=['limit', 'next_token', 'sort_filters', 'sort_ascending'],
+    defaults=[100, None, [], True])
 QueryResults = namedtuple(
     'QueryResults',
     field_names=['items', 'next_token'],
@@ -99,7 +99,7 @@ class Repository():
     def __list(self, *args, **kwargs):
         hash_key = self.make_hash_key(*args)
         normal_key = 'PK'
-        q_params = {}
+        q_params = {'ScanIndexForward': kwargs['params'].sort_ascending}
         if 'index_name' in kwargs:
             q_params['IndexName'] = kwargs['index_name']
             normal_key = f'{kwargs["index_name"]}-PK'

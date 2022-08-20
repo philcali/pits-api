@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 from pinthesky import api
 from pinthesky.database import MAX_ITEMS
 from pinthesky.globals import app_context, request, response
+from pinthesky.s3 import generate_presigned_url
 
 
 DATA_ENDPOINT = f'https://{os.getenv("DATA_ENDPOINT")}'
@@ -94,15 +95,7 @@ def get_captured_image(s3, bucket_name, image_prefix, thing_name):
 @api.route("/cameras/:thing_name/captureImage/url")
 def get_captured_image_url(s3, bucket_name, image_prefix, thing_name):
     s3key = f'{image_prefix}/{thing_name}/{LATEST_THUMBNAIL}'
-    expires_in = 3600
-    url = s3.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': bucket_name, 'Key': s3key},
-        ExpiresIn=expires_in)
-    return {
-        'expiresIn': expires_in,
-        'url': url
-    }
+    return generate_presigned_url(s3, bucket_name, s3key)
 
 
 @api.route("/cameras/:thing_name/configuration")
