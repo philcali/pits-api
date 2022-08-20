@@ -5,11 +5,11 @@ from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, SortFilter
 from pinthesky.globals import app_context, request
 
 
-app_context.inject('motion_videos', MotionVideos())
+app_context.inject('motion_videos_data', MotionVideos())
 
 
 @api.route("/videos")
-def list_motion_videos(motion_videos, first_index):
+def list_motion_videos(motion_videos_data, first_index):
     limit = int(request.queryparams.get('limit', MAX_ITEMS))
     limit = min(MAX_ITEMS, max(1, limit))
     next_token = request.queryparams.get('nextToken', None)
@@ -38,8 +38,8 @@ def list_motion_videos(motion_videos, first_index):
             method='gt',
             values=[floor(end_timestamp)]
         ))
-    page = motion_videos.items_index(
-        request.account_id,
+    page = motion_videos_data.items_index(
+        request.account_id(),
         index_name=first_index,
         params=QueryParams(
             limit=limit,

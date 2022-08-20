@@ -32,7 +32,6 @@ class Repository():
             type,
             table=None,
             fields_to_keys={},
-            fields_to_index={},
             token_marshaller=EncryptedTokenMarshaller()) -> None:
         resolved = app_context.resolve('GLOBAL')
         self.table = table if table is not None else resolved['table']
