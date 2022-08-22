@@ -34,6 +34,9 @@ class Request(_ContextContainer):
             "context"
         ])
 
+    def authorizer(self):
+        return self.event['requestContext']['authorizer']
+
     def account_id(self):
         return self.event['requestContext']['accountId']
 

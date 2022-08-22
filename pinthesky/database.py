@@ -105,7 +105,10 @@ class Repository():
             normal_key = f'{kwargs["index_name"]}-PK'
         key_cond = Key(normal_key).eq(hash_key)
         for f in kwargs['params'].sort_filters:
-            key_cond = And(key_cond, getattr(Key(f.name), f.method)(*f.values))
+            sk = f.name
+            if f.name in self.fields_to_keys:
+                sk = self.fields_to_keys[f.name]
+            key_cond = And(key_cond, getattr(Key(sk), f.method)(*f.values))
         q_params['KeyConditionExpression'] = key_cond
         q_params['Limit'] = kwargs['params'].limit
         last_key = self.tokens.decrypt(
@@ -242,4 +245,11 @@ class MotionVideos(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="MotionVideos", fields_to_keys={
             'motionVideo': 'SK'
+        })
+
+
+class Subscriptions(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="Subscriptions", fields_to_keys={
+            'subject': 'SK'
         })

@@ -1,7 +1,9 @@
+from datetime import datetime
 import json
+from math import floor
 from botocore.exceptions import ClientError
 from pinthesky import api
-from pinthesky.database import Cameras, CamerasToGroups, QueryParams, MAX_ITEMS, Repository
+from pinthesky.database import Cameras, CamerasToGroups, QueryParams, MAX_ITEMS, Repository, SortFilter
 from pinthesky.exception import ConflictException
 from pinthesky.globals import app_context, request, response
 
@@ -56,13 +58,39 @@ def list_camera_videos(motion_videos_data, thing_name):
     limit = int(request.queryparams.get('limit', MAX_ITEMS))
     limit = min(MAX_ITEMS, max(1, limit))
     next_token = request.queryparams.get('nextToken', None)
+    start_time = request.queryparams.get('startTime', None)
+    end_time = request.queryparams.get('endTime', None)
     sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
+    sort_filters = []
+    if start_time is not None and end_time is not None:
+        start_ts = floor(datetime.fromisoformat(start_time).timestamp())
+        end_ts = floor(datetime.fromtimestamp(end_time).timestamp())
+        sort_filters.append(SortFilter(
+            name="motionVideo",
+            method="between",
+            values=[f'{ts}.motion.mp4' for ts in [start_ts, end_ts]]
+        ))
+    elif start_time is not None:
+        start_ts = floor(datetime.fromisoformat(start_time).timestamp())
+        sort_filters.append(SortFilter(
+            name="motionVideo",
+            method="lt",
+            values=[f'{start_ts}.motion.mp4']
+        ))
+    elif end_time is not None:
+        end_ts = floor(datetime.fromisoformat(end_time).timestamp())
+        sort_filters.append(SortFilter(
+            name="motionVideo",
+            method="gt",
+            values=[f'{end_ts}.motion.mp4']
+        ))
     page = motion_videos_data.items(
         request.account_id(),
         thing_name,
         params=QueryParams(
             sort_ascending=sort_asc,
             limit=limit,
+            sort_filters=sort_filters,
             next_token=next_token))
     return {
         'items': page.items,
