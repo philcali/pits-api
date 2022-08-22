@@ -197,22 +197,6 @@ class Repository():
         return self.prune_dto(response.get('Item', None))
 
 
-class Configurations(Repository):
-    def __init__(self, table=None) -> None:
-        super().__init__(table=table, type="Configurations", fields_to_keys={
-            'id': 'SK'
-        })
-
-    def get_default(self, account_id):
-        return self.get(account_id, item_id='default')
-
-    def put(self, account_id, item):
-        try:
-            return self.create(account_id, item=item)
-        except ConflictException:
-            return self.update(account_id, item=item)
-
-
 class Groups(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="Groups", fields_to_keys={
