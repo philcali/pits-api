@@ -105,7 +105,10 @@ class Repository():
             normal_key = f'{kwargs["index_name"]}-PK'
         key_cond = Key(normal_key).eq(hash_key)
         for f in kwargs['params'].sort_filters:
-            key_cond = And(key_cond, getattr(Key(f.name), f.method)(*f.values))
+            sk = f.name
+            if f.name in self.fields_to_keys:
+                sk = self.fields_to_keys[f.name]
+            key_cond = And(key_cond, getattr(Key(sk), f.method)(*f.values))
         q_params['KeyConditionExpression'] = key_cond
         q_params['Limit'] = kwargs['params'].limit
         last_key = self.tokens.decrypt(
@@ -194,22 +197,6 @@ class Repository():
         return self.prune_dto(response.get('Item', None))
 
 
-class Configurations(Repository):
-    def __init__(self, table=None) -> None:
-        super().__init__(table=table, type="Configurations", fields_to_keys={
-            'id': 'SK'
-        })
-
-    def get_default(self, account_id):
-        return self.get(account_id, item_id='default')
-
-    def put(self, account_id, item):
-        try:
-            return self.create(account_id, item=item)
-        except ConflictException:
-            return self.update(account_id, item=item)
-
-
 class Groups(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="Groups", fields_to_keys={
@@ -242,4 +229,11 @@ class MotionVideos(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="MotionVideos", fields_to_keys={
             'motionVideo': 'SK'
+        })
+
+
+class Subscriptions(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="Subscriptions", fields_to_keys={
+            'id': 'SK'
         })

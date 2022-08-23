@@ -42,6 +42,7 @@ def get_pet(petId):
 
 @api.route('/pets/:petId', methods=['PUT', 'POST'])
 def put_pet(petId):
+    assert 'value1' == request.authorizer()['jwt']['claims']['claim1']
     pet = json.loads(request.body)
     assert pet['name'] == 'Pixie'
     return {

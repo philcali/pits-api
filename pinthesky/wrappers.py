@@ -34,6 +34,12 @@ class Request(_ContextContainer):
             "context"
         ])
 
+    def authorizer(self):
+        return self.event['requestContext']['authorizer']
+
+    def username(self):
+        return self.authorizer()['jwt']['claims']['username']
+
     def account_id(self):
         return self.event['requestContext']['accountId']
 
