@@ -235,5 +235,5 @@ class MotionVideos(Repository):
 class Subscriptions(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="Subscriptions", fields_to_keys={
-            'subject': 'SK'
+            'id': 'SK'
         })
