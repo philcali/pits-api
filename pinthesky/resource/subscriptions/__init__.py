@@ -23,7 +23,7 @@ def list_subscriptions(subscription_data):
     }
 
 
-@api.route('/subscription/:id')
+@api.route('/subscriptions/:id')
 def get_subscription(subscription_data, sns, id):
     sub_data = subscription_data.get(
         request.account_id(),
@@ -83,7 +83,7 @@ def put_subscription(subscription_data, sns, id):
         subscriber = sns.Subscription(arn=sub_data['arn'])
         filter_policy = "{}"
         if 'filter' in data:
-            filter_policy = json.dump(data['filter'])
+            filter_policy = json.dumps(data['filter'])
         try:
             subscriber.set_attributes(
                 AttributeName="FilterPolicy",
