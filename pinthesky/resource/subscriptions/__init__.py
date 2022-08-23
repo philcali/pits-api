@@ -81,9 +81,7 @@ def put_subscription(subscription_data, sns, id):
     resp_data = {}
     if sub_data is not None:
         subscriber = sns.Subscription(arn=sub_data['arn'])
-        filter_policy = "{}"
-        if 'filter' in data:
-            filter_policy = json.dumps(data['filter'])
+        filter_policy = json.dumps(data.get('filter', {}))
         try:
             subscriber.set_attributes(
                 AttributeName="FilterPolicy",
@@ -91,7 +89,7 @@ def put_subscription(subscription_data, sns, id):
             resp_data['protocol'] = sub_data['protocol']
             resp_data['endpoint'] = sub_data['endpoint']
             resp_data['id'] = sub_data['id']
-            resp_data['filter'] = filter_policy
+            resp_data['filter'] = data.get('filter', {})
         except ClientError as e:
             if e.response['Error']['Code'] != 'NotFound':
                 raise
