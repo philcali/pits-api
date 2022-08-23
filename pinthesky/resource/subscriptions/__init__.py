@@ -31,14 +31,14 @@ def get_subscription(subscription_data, sns, id):
         item_id=id)
     resp_data = {}
     if sub_data is not None:
-        subscriber = sns.Subscription(arn=sub_data.arn)
+        subscriber = sns.Subscription(arn=sub_data['arn'])
         try:
             attrs = subscriber.attributes
             if 'FilterPolicy' in attrs:
                 resp_data['filter'] = json.loads(attrs['FilterPolicy'])
-            resp_data['id'] = sub_data.id
-            resp_data['protocol'] = sub_data.protocol
-            resp_data['endpoint'] = sub_data.endpoint
+            resp_data['id'] = sub_data['id']
+            resp_data['protocol'] = sub_data['protocol']
+            resp_data['endpoint'] = sub_data['endpoint']
         except ClientError as e:
             if e.response['Error']['Code'] != 'NotFound':
                 raise
@@ -80,7 +80,7 @@ def put_subscription(subscription_data, sns, id):
         item_id=id)
     resp_data = {}
     if sub_data is not None:
-        subscriber = sns.Subscription(arn=sub_data.arn)
+        subscriber = sns.Subscription(arn=sub_data['arn'])
         filter_policy = "{}"
         if 'filter' in data:
             filter_policy = json.dump(data['filter'])
@@ -88,9 +88,9 @@ def put_subscription(subscription_data, sns, id):
             subscriber.set_attributes(
                 AttributeName="FilterPolicy",
                 AttributeValue=filter_policy)
-            resp_data['protocol'] = sub_data.protocol
-            resp_data['endpoint'] = sub_data.endpoint
-            resp_data['id'] = sub_data.id
+            resp_data['protocol'] = sub_data['protocol']
+            resp_data['endpoint'] = sub_data['endpoint']
+            resp_data['id'] = sub_data['id']
             resp_data['filter'] = filter_policy
         except ClientError as e:
             if e.response['Error']['Code'] != 'NotFound':
@@ -110,7 +110,7 @@ def delete_subscription(subscription_data, sns, id):
         request.username(),
         item_id=id)
     if sub_data is not None:
-        subscriber = sns.Subscription(arn=sub_data.arn)
+        subscriber = sns.Subscription(arn=sub_data['arn'])
         subscriber.delete()
         subscription_data.delete(
             request.account_id(),
