@@ -1,4 +1,5 @@
 import json
+import re
 from pinthesky import api
 from pinthesky.database import Groups, GroupsToCameras, QueryParams, MAX_ITEMS, Repository
 from pinthesky.exception import ConflictException
@@ -154,11 +155,28 @@ def put_group(group_data, group_name):
 def list_groups(group_data):
     limit = int(request.queryparams.get('limit', MAX_ITEMS))
     limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('next_token', None)
-    page = group_data.items(
-        request.account_id(),
-        params=QueryParams(limit=limit, next_token=next_token))
+    next_token = request.queryparams.get('nextToken', None)
+    group_names = request.queryparams.get('groupName', None)
+    if group_names is None:
+        page = group_data.items(
+            request.account_id(),
+            params=QueryParams(limit=limit, next_token=next_token))
+        return {
+            'items': page.items,
+            'nextToken': page.next_token
+        }
+    item_ids = re.split('\\s*,\\s*', group_data)
+    if len(item_ids) > limit:
+        response.status_code = 400
+        return {
+            'message': f'Provided {len(item_ids)} is more than {limit}.'
+        }
     return {
-        'items': page.items,
-        'nextToken': page.next_token
+        'items': Repository.batch_read(
+            request.account_id(),
+            reads=[
+                {'id': item_id, 'repository': group_data}
+                for item_id in item_ids
+            ]
+        )
     }

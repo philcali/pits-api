@@ -39,6 +39,33 @@ class Repository():
         self.fields_to_keys = fields_to_keys
         self.tokens = token_marshaller
 
+    def batch_read(*args, reads, ddb=None, table=None):
+        if table is None:
+            table = app_context.resolve('GLOBAL')['table']
+        if ddb is None:
+            ddb = app_context.resolve('GLOBAL')['dynamodb']
+        params = {table.name: {'Keys': []}}
+        lookups = {}
+        for entry in reads:
+            if 'repository' not in entry or 'id' not in entry:
+                logger.warn(f'Read skipped to missing fields: {entry}')
+                continue
+            keys = list(args)
+            if 'parent_ids' in entry:
+                for parent_id in entry.pop('parent_ids'):
+                    keys.append(parent_id)
+            key = {
+                'PK': entry['repository'].make_hash_key(*keys),
+                'SK': entry['id']
+            }
+            params[table.name]['Keys'].append(key)
+            lookups[key['PK'] + ':' + key['SK']] = entry['repository']
+        resp = ddb.batch_get_item(RequestItems=params)
+        return [
+            lookups[item['PK'] + ':' + item['SK']].prune_dto(item)
+            for item in resp['Responses'][table.name]
+        ]
+
     def batch_write(*args, updates, table=None):
         if table is None:
             table = app_context.resolve('GLOBAL')['table']
