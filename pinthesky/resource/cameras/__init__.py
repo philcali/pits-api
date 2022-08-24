@@ -1,5 +1,6 @@
-from datetime import datetime
 import json
+import re
+from datetime import datetime
 from math import floor
 from botocore.exceptions import ClientError
 from pinthesky import api
@@ -16,13 +17,30 @@ app_context.inject('camera_group_data', CamerasToGroups())
 def list_cameras(camera_data):
     limit = int(request.queryparams.get('limit', MAX_ITEMS))
     limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('next_token', None)
-    page = camera_data.items(
-        request.account_id(),
-        params=QueryParams(limit=limit, next_token=next_token))
+    next_token = request.queryparams.get('nextToken', None)
+    thing_names = request.queryparams.get('thingName', None)
+    if thing_names is None:
+        page = camera_data.items(
+            request.account_id(),
+            params=QueryParams(limit=limit, next_token=next_token))
+        return {
+            'items': page.items,
+            'nextToken': page.next_token
+        }
+    item_ids = re.split('\\s*,\\s*', thing_names)
+    if len(item_ids) > limit:
+        response.status_code = 400
+        return {
+            'message': f'Provided {len(item_ids)} is more than {limit}.'
+        }
     return {
-        'items': page.items,
-        'nextToken': page.next_token
+        'items': Repository.batch_read(
+            request.account_id(),
+            reads=[
+                {'id': item_id, 'repository': camera_data}
+                for item_id in item_ids
+            ]
+        )
     }
 
 
