@@ -3,7 +3,7 @@ from datetime import datetime
 from math import floor
 from pinthesky import api
 from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, SortFilter
-from pinthesky.globals import app_context, request
+from pinthesky.globals import app_context, request, response
 from pinthesky.s3 import generate_presigned_url
 
 
@@ -53,6 +53,18 @@ def list_motion_videos(motion_videos_data, first_index):
         'items': page.items,
         'nextToken': page.next_token
     }
+
+
+@api.route('/videos/:motion_video/cameras/:camera_name')
+def get_motion_video(motion_videos_data, motion_video, camera_name):
+    item = motion_videos_data.get(
+        request.account_id(),
+        camera_name,
+        item_id=motion_video)
+    if item is None:
+        response.status_code = 404
+        return {'message': f'Motion video {motion_video} does not exist'}
+    return item
 
 
 @api.route('/videos/:motion_video/cameras/:camera_name', methods=["PUT"])
