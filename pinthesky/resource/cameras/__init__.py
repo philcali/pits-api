@@ -1,9 +1,8 @@
 import json
 import re
-from datetime import datetime
-from math import floor
 from botocore.exceptions import ClientError
 from pinthesky import api
+from pinthesky.conversion import isoformat_to_timestamp
 from pinthesky.database import Cameras, CamerasToGroups, QueryParams, MAX_ITEMS, Repository, SortFilter
 from pinthesky.exception import ConflictException
 from pinthesky.globals import app_context, request, response
@@ -81,22 +80,22 @@ def list_camera_videos(motion_videos_data, thing_name):
     sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
     sort_filters = []
     if start_time is not None and end_time is not None:
-        start_ts = floor(datetime.fromisoformat(start_time).timestamp())
-        end_ts = floor(datetime.fromtimestamp(end_time).timestamp())
+        start_ts = isoformat_to_timestamp(start_time)
+        end_ts = isoformat_to_timestamp(end_time)
         sort_filters.append(SortFilter(
             name="motionVideo",
             method="between",
             values=[f'{ts}.motion.mp4' for ts in [start_ts, end_ts]]
         ))
     elif start_time is not None:
-        start_ts = floor(datetime.fromisoformat(start_time).timestamp())
+        start_ts = isoformat_to_timestamp(start_time)
         sort_filters.append(SortFilter(
             name="motionVideo",
             method="lt",
             values=[f'{start_ts}.motion.mp4']
         ))
     elif end_time is not None:
-        end_ts = floor(datetime.fromisoformat(end_time).timestamp())
+        end_ts = isoformat_to_timestamp(end_time)
         sort_filters.append(SortFilter(
             name="motionVideo",
             method="gt",

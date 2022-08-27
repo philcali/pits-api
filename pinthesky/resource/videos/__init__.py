@@ -1,7 +1,6 @@
 import json
-from datetime import datetime
-from math import floor
 from pinthesky import api
+from pinthesky.conversion import isoformat_to_timestamp
 from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, SortFilter
 from pinthesky.globals import app_context, request, response
 from pinthesky.s3 import generate_presigned_url
@@ -20,26 +19,24 @@ def list_motion_videos(motion_videos_data, first_index):
     sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
     sort_filters = []
     if start_time is not None and end_time is not None:
-        start_timestamp = datetime.fromisoformat(start_time).timestamp()
-        end_timestamp = datetime.fromisoformat(end_time).timestamp()
+        start_timestamp = isoformat_to_timestamp(start_time)
+        end_timestamp = isoformat_to_timestamp(end_time)
         sort_filters.append(SortFilter(
             name='createTime',
             method='between',
-            values=[floor(start_timestamp), floor(end_timestamp)]
+            values=[start_timestamp, end_timestamp]
         ))
     elif start_time is not None:
-        start_timestamp = datetime.fromisoformat(start_time).timestamp()
         sort_filters.append(SortFilter(
             name='createTime',
             method='lt',
-            values=[floor(start_timestamp)]
+            values=[isoformat_to_timestamp(start_time)]
         ))
     elif end_time is not None:
-        end_timestamp = datetime.fromisoformat(end_time).timestamp()
         sort_filters.append(SortFilter(
             name='createTime',
             method='gt',
-            values=[floor(end_timestamp)]
+            values=[isoformat_to_timestamp(end_time)]
         ))
     page = motion_videos_data.items_index(
         request.account_id(),
