@@ -1,9 +1,9 @@
 from pinthesky import api, set_stream_logger
 from pinthesky.globals import request, response
-from pinthesky.resource import inject, iot, cameras, groups, subscriptions, videos
+from pinthesky.resource import inject, iot, cameras, groups, subscriptions, videos, tags
 
 
-for res in [cameras, inject, iot, groups, videos, subscriptions]:
+for res in [cameras, inject, iot, groups, videos, subscriptions, tags]:
     set_stream_logger(res.__name__)
 
 

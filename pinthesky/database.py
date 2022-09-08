@@ -176,10 +176,11 @@ class Repository():
             raise e
         return self.prune_dto(new_item)
 
-    def update(self, *args, item):
+    def update(self, *args, item, fields_to_remove=[]):
         new_item = self.make_dto(*args, item=item, time_fields=['update'])
         condition = "attribute_exists(PK) and attribute_exists(SK)"
         update_exp = []
+        remove_exp = []
         update_names = {}
         update_values = {}
         for key, value in new_item.items():
@@ -188,14 +189,22 @@ class Repository():
             update_names[f'#{key}'] = key
             update_values[f':{key}'] = value
             update_exp.append(f'#{key} = :{key}')
+        for field in fields_to_remove:
+            update_names[f'#{field}'] = field
+            remove_exp.append(f'#{field}')
         try:
+            expression = []
+            if len(update_exp) > 0:
+                expression.append(f'SET {", ".join(update_exp)}')
+            if len(remove_exp) > 0:
+                expression.append(f'REMOVE {", ".join(remove_exp)}')
             response = self.table.update_item(
                 Key={
                     'PK': new_item['PK'],
                     'SK': new_item['SK']
                 },
                 ConditionExpression=condition,
-                UpdateExpression=f'SET {", ".join(update_exp)}',
+                UpdateExpression=" AND ".join(expression),
                 ExpressionAttributeNames=update_names,
                 ExpressionAttributeValues=update_values,
                 ReturnValues='ALL_NEW',
@@ -259,8 +268,33 @@ class MotionVideos(Repository):
         })
 
 
+class TagsToVideos(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(
+            table=table,
+            type="TagsToVideos",
+            fields_to_keys={'id': 'SK'}
+        )
+
+
+class VideosToTags(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(
+            table=table,
+            type="VideosToTags",
+            fields_to_keys={'id': 'SK'}
+        )
+
+
 class Subscriptions(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="Subscriptions", fields_to_keys={
             'id': 'SK'
+        })
+
+
+class Tags(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="Tags", fields_to_keys={
+            'name': 'SK'
         })
