@@ -269,9 +269,8 @@ class MotionVideos(Repository):
 
 
 class TagsToVideos(Repository):
-    def __init__(self, type, table=None) -> None:
+    def __init__(self, table=None) -> None:
         super().__init__(
-            type,
             table=table,
             type="TagsToVideos",
             fields_to_keys={'id': 'SK'}
@@ -279,9 +278,8 @@ class TagsToVideos(Repository):
 
 
 class VideosToTags(Repository):
-    def __init__(self, type, table=None) -> None:
+    def __init__(self, table=None) -> None:
         super().__init__(
-            type,
             table=table,
             type="VideosToTags",
             fields_to_keys={'id': 'SK'}
@@ -297,6 +295,6 @@ class Subscriptions(Repository):
 
 class Tags(Repository):
     def __init__(self, table=None) -> None:
-        super().__init__(type, table=table, type="Tags", fields_to_keys={
+        super().__init__(table=table, type="Tags", fields_to_keys={
             'name': 'SK'
         })
