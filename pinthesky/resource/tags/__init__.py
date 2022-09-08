@@ -27,6 +27,17 @@ def list_tags(tag_data):
     }
 
 
+@api.route('/tags/:tag_name')
+def get_tag(tag_data, tag_name):
+    item = tag_data.get(request.account_id(), item_id=tag_name)
+    if item is None:
+        response.status_code = 404
+        return {
+            'message': f'Tag with name {tag_name} does not exists.'
+        }
+    return item
+
+
 @api.route('/tags', methods=['POST'])
 def create_tag(tag_data):
     tag = json.loads(request.body)
@@ -36,7 +47,7 @@ def create_tag(tag_data):
             'message': 'Tag name is a required field'
         }
     try:
-        return tag_data.create(request.account_id(), tag)
+        return tag_data.create(request.account_id(), item=tag)
     except ConflictException as e:
         response.status_code = 409
         return {
@@ -49,7 +60,7 @@ def update_tag(tag_data, tag_name):
     tag = json.loads(request.body)
     tag['name'] = tag_name
     try:
-        return tag_data.update(request.account_id(), tag)
+        return tag_data.update(request.account_id(), item=tag)
     except NotFoundException as e:
         response.status_code = 404
         return {
@@ -59,4 +70,4 @@ def update_tag(tag_data, tag_name):
 
 @api.route('/tags/:tag_name', methods=['DELETE'])
 def delete_tag(tag_data, tag_name):
-    tag_data.delete(request.account_id(), tag_name)
+    tag_data.delete(request.account_id(), item_id=tag_name)
