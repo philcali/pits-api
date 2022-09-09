@@ -1,7 +1,8 @@
+import hashlib
 import json
 from pinthesky import api
 from pinthesky.conversion import sort_filters_for
-from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams
+from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, Repository
 from pinthesky.globals import app_context, request, response
 from pinthesky.s3 import generate_presigned_url
 
@@ -32,6 +33,24 @@ def list_motion_videos(motion_videos_data, first_index):
     }
 
 
+@api.route('/videos/:motion_video/cameras/:camera_name/tags')
+def list_motion_video_tags(video_tag_data, motion_video, camera_name):
+    limit = int(request.queryparams.get('limit', MAX_ITEMS))
+    limit = min(MAX_ITEMS, max(1, limit))
+    next_token = request.queryparams.get('nextToken', None)
+    gen_id = hashlib.sha256(f'{motion_video}:{camera_name}').hexdigest()
+    page = video_tag_data.items(
+        request.account_id(),
+        gen_id,
+        params=QueryParams(
+            limit=limit,
+            next_token=next_token))
+    return {
+        'items': page.items,
+        'nextToken': page.next_token
+    }
+
+
 @api.route('/videos/:motion_video/cameras/:camera_name')
 def get_motion_video(motion_videos_data, motion_video, camera_name):
     item = motion_videos_data.get(
@@ -56,11 +75,49 @@ def put_motion_video(motion_videos_data, motion_video, camera_name):
 
 
 @api.route('/videos/:motion_video/cameras/:camera_name', methods=["DELETE"])
-def delete_motion_video(motion_videos_data, motion_video, camera_name):
-    motion_videos_data.delete(
-        request.account_id(),
-        camera_name,
-        item_id=motion_video)
+def delete_motion_video(
+        motion_videos_data,
+        tag_video_data,
+        video_tag_data,
+        motion_video,
+        camera_name):
+    updates = [{
+        'repository': motion_videos_data,
+        'parent_ids': [camera_name],
+        'item': {
+            'motionVideo': motion_video,
+            'delete': True
+        }
+    }]
+    params = QueryParams()
+    while True:
+        gen_id = hashlib.sha256(f'{motion_video}:{camera_name}').hexdigest()
+        page = video_tag_data.items(
+            request.account_id(),
+            gen_id,
+            params=params
+        )
+        for item in page.items:
+            updates.append({
+                'repository': tag_video_data,
+                'parent_ids': [item['id']],
+                'item': {
+                    'id': gen_id,
+                    'delete': True
+                }
+            })
+            updates.append({
+                'repository': video_tag_data,
+                'parent_ids': [gen_id],
+                'item': {
+                    'id': item['id'],
+                    'delete': True
+                }
+            })
+        params = QueryParams(next_token=page.next_token)
+        if params.next_token is None:
+            break
+    Repository.batch_write(request.account_id(), updates=updates)
 
 
 @api.route('/videos/:motion_video/cameras/:camera_name/url')

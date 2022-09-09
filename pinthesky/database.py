@@ -19,7 +19,7 @@ SortFilter = namedtuple(
 QueryParams = namedtuple(
     'QueryParams',
     field_names=['limit', 'next_token', 'sort_filters', 'sort_ascending'],
-    defaults=[100, None, [], True])
+    defaults=[MAX_ITEMS, None, [], True])
 QueryResults = namedtuple(
     'QueryResults',
     field_names=['items', 'next_token'],
