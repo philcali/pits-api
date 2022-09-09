@@ -1,3 +1,4 @@
+import hashlib
 import dateutil.parser
 from math import floor
 
@@ -14,6 +15,12 @@ def timestamp_to_motion(timestamp):
 
 def identity_func(t):
     return t
+
+
+def hashed_video(motion_video, camera_name):
+    hash = hashlib.sha256()
+    hash.update(bytes(f'{motion_video}:{camera_name}', encoding='utf8'))
+    return hash.hexdigest()
 
 
 def sort_filters_for(field, start_time, end_time, format=None):

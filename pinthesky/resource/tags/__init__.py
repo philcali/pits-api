@@ -1,5 +1,6 @@
 import json
-from pinthesky.database import MAX_ITEMS, QueryParams, Tags, TagsToVideos, VideosToTags
+from pinthesky.conversion import hashed_video, sort_filters_for
+from pinthesky.database import MAX_ITEMS, QueryParams, Repository, Tags, TagsToVideos, VideosToTags
 from pinthesky.exception import ConflictException, NotFoundException
 from pinthesky.globals import app_context, request, response
 from pinthesky.resource import api
@@ -69,5 +70,126 @@ def update_tag(tag_data, tag_name):
 
 
 @api.route('/tags/:tag_name', methods=['DELETE'])
-def delete_tag(tag_data, tag_name):
-    tag_data.delete(request.account_id(), item_id=tag_name)
+def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
+    updates = [{
+        'repository': tag_data,
+        'delete': True,
+        'item': {
+            'name': tag_name
+        }
+    }]
+    params = QueryParams()
+    while True:
+        page = tag_video_data.items(
+            request.account_id(),
+            tag_name,
+            params=params
+        )
+        for item in page.items:
+            updates.append({
+                'repository': tag_video_data,
+                'parent_ids': [tag_name],
+                'delete': True,
+                'item': {
+                    'id': item['id']
+                }
+            })
+            updates.append({
+                'repository': video_tag_data,
+                'parent_ids': [item['id']],
+                'delete': True,
+                'item': {
+                    'id': tag_name
+                }
+            })
+        params = QueryParams(next_token=page.next_token)
+        if params.next_token is None:
+            break
+    Repository.batch_write(request.account_id(), updates=updates)
+
+
+@api.route('/tags/:tag_name/videos', methods=['GET'])
+def list_tagged_videos(tag_video_data, first_index, tag_name):
+    limit = int(request.queryparams.get('limit', MAX_ITEMS))
+    limit = min(MAX_ITEMS, max(1, limit))
+    next_token = request.queryparams.get('nextToken', None)
+    start_time = request.queryparams.get('startTime', None)
+    end_time = request.queryparams.get('endTime', None)
+    sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
+    sort_filters = sort_filters_for('createTime', start_time, end_time)
+    page = tag_video_data.items_index(
+        request.account_id(),
+        tag_name,
+        index_name=first_index,
+        params=QueryParams(
+            sort_ascending=sort_asc,
+            limit=limit,
+            next_token=next_token,
+            sort_filters=sort_filters))
+    return {
+        'items': page.items,
+        'nextToken': page.next_token
+    }
+
+
+@api.route('/tags/:tag_name/videos', methods=['POST'])
+def tag_videos(tag_video_data, video_tag_data, tag_name):
+    input = json.loads(request.body)
+    if 'videos' not in input:
+        response.status_code = 401
+        return {'message': 'Tagging requires videos.'}
+    updates = []
+    for index, video in enumerate(input['videos']):
+        for field in ['thingName', 'motionVideo', 'duration', 'expiresIn']:
+            if field not in video:
+                response.status_code = 401
+                return {'message': f'Item {index} is missing required fields'}
+        gen_id = hashed_video(video['motionVideo'], video['thingName'])
+        create_time = int(video['motionVideo'].split('.')[0])
+        updates.append({
+            'repository': tag_video_data,
+            'parent_ids': [tag_name],
+            'item': {
+                'id': gen_id,
+                'motionVideo': video['motionVideo'],
+                'thingName': video['thingName'],
+                'duration': video['duration'],
+                'expiresIn': video['expiresIn'],
+                'createTime': create_time,
+                'GS1-PK': tag_video_data.make_hash_key(
+                    request.account_id(),
+                    tag_name
+                )
+            }
+        })
+        updates.append({
+            'repository': video_tag_data,
+            'parent_ids': [gen_id],
+            'item': {
+                'id': tag_name,
+                'expiresIn': video['expiresIn']
+            }
+        })
+    Repository.batch_write(request.account_id(), updates=updates)
+
+
+@api.route('/tags/:tag_name/videos/:video_id', methods=['DELETE'])
+def untag_videos(tag_video_data, video_tag_data, tag_name, video_id):
+    updates = []
+    updates.append({
+        'repository': tag_video_data,
+        'parent_ids': [tag_name],
+        'delete': True,
+        'item': {
+            'id': video_id
+        }
+    })
+    updates.append({
+        'repository': video_tag_data,
+        'parent_ids': [video_id],
+        'delete': True,
+        'item': {
+            'id': tag_name
+        }
+    })
+    Repository.batch_write(request.account_id(), updates=updates)
