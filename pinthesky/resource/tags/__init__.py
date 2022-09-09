@@ -1,6 +1,5 @@
-import hashlib
 import json
-from pinthesky.conversion import sort_filters_for
+from pinthesky.conversion import hashed_video, sort_filters_for
 from pinthesky.database import MAX_ITEMS, QueryParams, Repository, Tags, TagsToVideos, VideosToTags
 from pinthesky.exception import ConflictException, NotFoundException
 from pinthesky.globals import app_context, request, response
@@ -141,12 +140,11 @@ def tag_videos(tag_video_data, video_tag_data, tag_name):
         return {'message': 'Tagging requires videos.'}
     updates = []
     for index, video in enumerate(input['videos']):
-        for field in ['thingName', 'motionVideo', 'duration']:
+        for field in ['thingName', 'motionVideo', 'duration', 'expiresIn']:
             if field not in video:
                 response.status_code = 401
                 return {'message': f'Item {index} is missing required fields'}
-        hash = hashlib.sha256(f'{video["motionVideo"]}:{video["thingName"]}')
-        gen_id = hash.hexdigest()
+        gen_id = hashed_video(video['motionVideo'], video['thingName'])
         create_time = int(video['motionVideo'].split('.')[0])
         updates.append({
             'repository': tag_video_data,
@@ -156,6 +154,7 @@ def tag_videos(tag_video_data, video_tag_data, tag_name):
                 'motionVideo': video['motionVideo'],
                 'thingName': video['thingName'],
                 'duration': video['duration'],
+                'expiresIn': video['expiresIn'],
                 'createTime': create_time,
                 'GS1-PK': tag_video_data.make_hash_key(
                     request.account_id(),
@@ -167,7 +166,8 @@ def tag_videos(tag_video_data, video_tag_data, tag_name):
             'repository': video_tag_data,
             'parent_ids': [gen_id],
             'item': {
-                'id': tag_name
+                'id': tag_name,
+                'expiresIn': video['expiresIn']
             }
         })
     Repository.batch_write(request.account_id(), updates=updates)

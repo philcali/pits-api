@@ -1,7 +1,6 @@
-import hashlib
 import json
 from pinthesky import api
-from pinthesky.conversion import sort_filters_for
+from pinthesky.conversion import hashed_video, sort_filters_for
 from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, Repository
 from pinthesky.globals import app_context, request, response
 from pinthesky.s3 import generate_presigned_url
@@ -38,7 +37,7 @@ def list_motion_video_tags(video_tag_data, motion_video, camera_name):
     limit = int(request.queryparams.get('limit', MAX_ITEMS))
     limit = min(MAX_ITEMS, max(1, limit))
     next_token = request.queryparams.get('nextToken', None)
-    gen_id = hashlib.sha256(f'{motion_video}:{camera_name}').hexdigest()
+    gen_id = hashed_video(motion_video, camera_name)
     page = video_tag_data.items(
         request.account_id(),
         gen_id,
@@ -91,7 +90,7 @@ def delete_motion_video(
     }]
     params = QueryParams()
     while True:
-        gen_id = hashlib.sha256(f'{motion_video}:{camera_name}').hexdigest()
+        gen_id = hashed_video(motion_video, camera_name)
         page = video_tag_data.items(
             request.account_id(),
             gen_id,
