@@ -73,9 +73,9 @@ def update_tag(tag_data, tag_name):
 def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
     updates = [{
         'repository': tag_data,
+        'delete': True,
         'item': {
-            'name': tag_name,
-            'delete': True
+            'name': tag_name
         }
     }]
     params = QueryParams()
@@ -89,17 +89,17 @@ def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
             updates.append({
                 'repository': tag_video_data,
                 'parent_ids': [tag_name],
+                'delete': True,
                 'item': {
-                    'id': item['id'],
-                    'delete': True
+                    'id': item['id']
                 }
             })
             updates.append({
                 'repository': video_tag_data,
                 'parent_ids': [item['id']],
+                'delete': True,
                 'item': {
-                    'id': tag_name,
-                    'delete': True
+                    'id': tag_name
                 }
             })
         params = QueryParams(next_token=page.next_token)
@@ -179,17 +179,17 @@ def untag_videos(tag_video_data, video_tag_data, tag_name, video_id):
     updates.append({
         'repository': tag_video_data,
         'parent_ids': [tag_name],
+        'delete': True,
         'item': {
-            'id': video_id,
-            'delete': True
+            'id': video_id
         }
     })
     updates.append({
         'repository': video_tag_data,
         'parent_ids': [video_id],
+        'delete': True,
         'item': {
-            'id': tag_name,
-            'delete': True
+            'id': tag_name
         }
     })
     Repository.batch_write(request.account_id(), updates=updates)

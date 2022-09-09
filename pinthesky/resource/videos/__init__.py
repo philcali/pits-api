@@ -83,9 +83,9 @@ def delete_motion_video(
     updates = [{
         'repository': motion_videos_data,
         'parent_ids': [camera_name],
+        'delete': True,
         'item': {
-            'motionVideo': motion_video,
-            'delete': True
+            'motionVideo': motion_video
         }
     }]
     params = QueryParams()
@@ -100,17 +100,17 @@ def delete_motion_video(
             updates.append({
                 'repository': tag_video_data,
                 'parent_ids': [item['id']],
+                'delete': True,
                 'item': {
-                    'id': gen_id,
-                    'delete': True
+                    'id': gen_id
                 }
             })
             updates.append({
                 'repository': video_tag_data,
                 'parent_ids': [gen_id],
+                'delete': True,
                 'item': {
-                    'id': item['id'],
-                    'delete': True
+                    'id': item['id']
                 }
             })
         params = QueryParams(next_token=page.next_token)
