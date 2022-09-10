@@ -50,6 +50,38 @@ def list_motion_video_tags(video_tag_data, motion_video, camera_name):
     }
 
 
+@api.route(
+    '/videos/:motion_video/cameras/:camera_name/tags/:tag_name',
+    methods=['DELETE']
+)
+def delete_tag_from_video(
+        video_tag_data,
+        tag_video_data,
+        motion_video,
+        camera_name,
+        tag_name):
+    gen_id = hashed_video(motion_video, camera_name)
+    updates = [
+        {
+            'repository': tag_video_data,
+            'parent_ids': [tag_name],
+            'delete': True,
+            'item': {
+                'id': gen_id
+            }
+        },
+        {
+            'repository': video_tag_data,
+            'parent_ids': [gen_id],
+            'delete': True,
+            'item': {
+                'id': tag_name
+            }
+        }
+    ]
+    Repository.batch_write(request.account_id(), updates=updates)
+
+
 @api.route('/videos/:motion_video/cameras/:camera_name')
 def get_motion_video(motion_videos_data, motion_video, camera_name):
     item = motion_videos_data.get(
