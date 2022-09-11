@@ -57,16 +57,16 @@ def list_iot_things_in_group(iot, group_name):
 
 @api.route("/cameras/:thing_name/captureImage", methods=["POST"])
 def start_capture_image(iot_data, thing_name):
-    capture_id = uuid4()
+    capture_id = str(uuid4())
     publish_event(iot_data, thing_name, {
         "name": "capture_image",
         "context": {
             "file_name": LATEST_THUMBNAIL,
-            "capture_id": str(capture_id)
+            "capture_id": capture_id
         }
     })
     return {
-        "id": str(capture_id)
+        "id": capture_id
     }
 
 
