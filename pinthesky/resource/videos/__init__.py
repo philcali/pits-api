@@ -1,8 +1,9 @@
 import json
 from pinthesky import api
-from pinthesky.conversion import hashed_video, sort_filters_for
-from pinthesky.database import MAX_ITEMS, MotionVideos, QueryParams, Repository
+from pinthesky.conversion import hashed_video
+from pinthesky.database import MotionVideos, QueryParams, Repository
 from pinthesky.globals import app_context, request, response
+from pinthesky.resource.helpers import create_query_params
 from pinthesky.s3 import generate_presigned_url
 
 
@@ -11,21 +12,13 @@ app_context.inject('motion_videos_data', MotionVideos())
 
 @api.route("/videos")
 def list_motion_videos(motion_videos_data, first_index):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
-    start_time = request.queryparams.get('startTime', None)
-    end_time = request.queryparams.get('endTime', None)
-    sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
-    sort_filters = sort_filters_for('createTime', start_time, end_time)
     page = motion_videos_data.items_index(
         request.account_id(),
         index_name=first_index,
-        params=QueryParams(
-            sort_ascending=sort_asc,
-            limit=limit,
-            next_token=next_token,
-            sort_filters=sort_filters))
+        params=create_query_params(
+            request=request,
+            sort_order='descending'
+        ))
     return {
         'items': page.items,
         'nextToken': page.next_token
@@ -34,16 +27,11 @@ def list_motion_videos(motion_videos_data, first_index):
 
 @api.route('/videos/:motion_video/cameras/:camera_name/tags')
 def list_motion_video_tags(video_tag_data, motion_video, camera_name):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     gen_id = hashed_video(motion_video, camera_name)
     page = video_tag_data.items(
         request.account_id(),
         gen_id,
-        params=QueryParams(
-            limit=limit,
-            next_token=next_token))
+        params=create_query_params(request))
     return {
         'items': page.items,
         'nextToken': page.next_token

@@ -1,9 +1,10 @@
 import json
-from pinthesky.conversion import hashed_video, sort_filters_for
-from pinthesky.database import MAX_ITEMS, QueryParams, Repository, Tags, TagsToVideos, VideosToTags
+from pinthesky.conversion import hashed_video
+from pinthesky.database import QueryParams, Repository, Tags, TagsToVideos, VideosToTags
 from pinthesky.exception import ConflictException, NotFoundException
 from pinthesky.globals import app_context, request, response
 from pinthesky.resource import api
+from pinthesky.resource.helpers import create_query_params
 
 app_context.inject('tag_data', Tags())
 app_context.inject('tag_video_data', TagsToVideos())
@@ -12,15 +13,9 @@ app_context.inject('video_tag_data', VideosToTags())
 
 @api.route('/tags')
 def list_tags(tag_data):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     results = tag_data.items(
         request.account_id(),
-        params=QueryParams(
-            limit=limit,
-            next_token=next_token
-        )
+        params=create_query_params(request=request)
     )
     return {
         'items': results.items,
@@ -78,12 +73,13 @@ def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
             'name': tag_name
         }
     }]
-    params = QueryParams()
-    while True:
+    truncated = True
+    next_token = None
+    while truncated:
         page = tag_video_data.items(
             request.account_id(),
             tag_name,
-            params=params
+            params=QueryParams(next_token=next_token)
         )
         for item in page.items:
             updates.append({
@@ -102,30 +98,22 @@ def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
                     'id': tag_name
                 }
             })
-        params = QueryParams(next_token=page.next_token)
-        if params.next_token is None:
-            break
+        next_token = page.next_token
+        truncated = next_token is None
     Repository.batch_write(request.account_id(), updates=updates)
 
 
 @api.route('/tags/:tag_name/videos', methods=['GET'])
 def list_tagged_videos(tag_video_data, first_index, tag_name):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
-    start_time = request.queryparams.get('startTime', None)
-    end_time = request.queryparams.get('endTime', None)
-    sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
-    sort_filters = sort_filters_for('createTime', start_time, end_time)
     page = tag_video_data.items_index(
         request.account_id(),
         tag_name,
         index_name=first_index,
-        params=QueryParams(
-            sort_ascending=sort_asc,
-            limit=limit,
-            next_token=next_token,
-            sort_filters=sort_filters))
+        params=create_query_params(
+            request=request,
+            sort_order='descending'
+        )
+    )
     return {
         'items': page.items,
         'nextToken': page.next_token
