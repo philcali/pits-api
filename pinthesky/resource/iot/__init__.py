@@ -4,8 +4,8 @@ import os
 from uuid import uuid4
 from botocore.exceptions import ClientError
 from pinthesky import api
-from pinthesky.database import MAX_ITEMS
 from pinthesky.globals import app_context, request, response
+from pinthesky.resource.helpers import get_limit
 from pinthesky.s3 import generate_presigned_url
 
 
@@ -29,9 +29,7 @@ def publish_event(iot_data, thing_name, payload):
 @api.route("/iot/groups")
 def list_iot_groups(iot):
     next_token = request.queryparams.get('nextToken', None)
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    kwargs = {'maxResults': limit}
+    kwargs = {'maxResults': get_limit(request)}
     if next_token is not None:
         kwargs['nextToken'] = next_token
     response = iot.list_thing_groups(**kwargs)
@@ -44,9 +42,10 @@ def list_iot_groups(iot):
 @api.route("/iot/groups/:group_name/things")
 def list_iot_things_in_group(iot, group_name):
     next_token = request.queryparams.get('nextToken', None)
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    kwargs = {'maxResults': limit, 'thingGroupName': group_name}
+    kwargs = {
+        'maxResults': get_limit(request),
+        'thingGroupName': group_name
+    }
     if next_token is not None:
         kwargs['nextToken'] = next_token
     response = iot.list_things_in_thing_group(**kwargs)
@@ -58,16 +57,16 @@ def list_iot_things_in_group(iot, group_name):
 
 @api.route("/cameras/:thing_name/captureImage", methods=["POST"])
 def start_capture_image(iot_data, thing_name):
-    capture_id = uuid4()
+    capture_id = str(uuid4())
     publish_event(iot_data, thing_name, {
         "name": "capture_image",
         "context": {
             "file_name": LATEST_THUMBNAIL,
-            "capture_id": str(capture_id)
+            "capture_id": capture_id
         }
     })
     return {
-        "id": str(capture_id)
+        "id": capture_id
     }
 
 

@@ -1,9 +1,10 @@
 import json
 import re
 from pinthesky import api
-from pinthesky.database import Groups, GroupsToCameras, QueryParams, MAX_ITEMS, Repository
+from pinthesky.database import Groups, GroupsToCameras, QueryParams, Repository
 from pinthesky.exception import ConflictException
 from pinthesky.globals import app_context, request, response
+from pinthesky.resource.helpers import create_query_params, get_limit
 
 
 app_context.inject('group_data', Groups())
@@ -12,13 +13,10 @@ app_context.inject('group_camera_data', GroupsToCameras())
 
 @api.route("/groups/:thing_name/cameras")
 def list_group_cameras(group_camera_data, thing_name):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     page = group_camera_data.items(
         request.account_id(),
         thing_name,
-        params=QueryParams(limit=limit, next_token=next_token))
+        params=create_query_params(request))
     return {
         'items': page.items,
         'nextToken': page.next_token
@@ -121,7 +119,7 @@ def delete_group(
         page = group_camera_data.items(
             request.account_id(),
             group_name,
-            params=QueryParams(limit=MAX_ITEMS, next_token=next_token))
+            params=QueryParams(next_token=next_token))
         for item in page.items:
             updates.append({
                 'repository': group_camera_data,
@@ -153,19 +151,17 @@ def put_group(group_data, group_name):
 
 @api.route("/groups")
 def list_groups(group_data):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     group_names = request.queryparams.get('groupName', None)
     if group_names is None:
         page = group_data.items(
             request.account_id(),
-            params=QueryParams(limit=limit, next_token=next_token))
+            params=create_query_params(request))
         return {
             'items': page.items,
             'nextToken': page.next_token
         }
-    item_ids = re.split('\\s*,\\s*', group_data)
+    item_ids = re.split('\\s*,\\s*', group_names)
+    limit = get_limit(request)
     if len(item_ids) > limit:
         response.status_code = 400
         return {

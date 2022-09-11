@@ -1,9 +1,10 @@
 import boto3
 import json
 from botocore.exceptions import ClientError
-from pinthesky.database import MAX_ITEMS, QueryParams, Subscriptions
+from pinthesky.database import Subscriptions
 from pinthesky.globals import app_context, request, response
 from pinthesky.resource import api
+from pinthesky.resource.helpers import create_query_params
 
 app_context.inject('subscription_data', Subscriptions())
 app_context.inject('sns', boto3.resource('sns'))
@@ -11,12 +12,10 @@ app_context.inject('sns', boto3.resource('sns'))
 
 @api.route('/subscriptions')
 def list_subscriptions(subscription_data):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    next_token = request.queryparams.get('nextToken', None)
     page = subscription_data.items(
         request.account_id(),
         request.username(),
-        params=QueryParams(limit=limit, next_token=next_token))
+        params=create_query_params(request))
     return {
         'items': page.items,
         'nextToken': page.next_token

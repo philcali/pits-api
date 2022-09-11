@@ -298,3 +298,8 @@ class Tags(Repository):
         super().__init__(table=table, type="Tags", fields_to_keys={
             'name': 'SK'
         })
+
+
+class DeviceHealth(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="DeviceHealth")

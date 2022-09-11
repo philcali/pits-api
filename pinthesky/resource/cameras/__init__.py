@@ -2,10 +2,11 @@ import json
 import re
 from botocore.exceptions import ClientError
 from pinthesky import api
-from pinthesky.conversion import sort_filters_for, timestamp_to_motion
-from pinthesky.database import Cameras, CamerasToGroups, QueryParams, MAX_ITEMS, Repository
+from pinthesky.conversion import timestamp_to_motion
+from pinthesky.database import Cameras, CamerasToGroups, QueryParams, Repository
 from pinthesky.exception import ConflictException
 from pinthesky.globals import app_context, request, response
+from pinthesky.resource.helpers import create_query_params, get_limit
 
 
 app_context.inject('camera_data', Cameras())
@@ -14,19 +15,17 @@ app_context.inject('camera_group_data', CamerasToGroups())
 
 @api.route("/cameras")
 def list_cameras(camera_data):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     thing_names = request.queryparams.get('thingName', None)
     if thing_names is None:
         page = camera_data.items(
             request.account_id(),
-            params=QueryParams(limit=limit, next_token=next_token))
+            params=create_query_params(request))
         return {
             'items': page.items,
             'nextToken': page.next_token
         }
     item_ids = re.split('\\s*,\\s*', thing_names)
+    limit = get_limit(request)
     if len(item_ids) > limit:
         response.status_code = 400
         return {
@@ -57,13 +56,10 @@ def get_camera(camera_data, thing_name):
 
 @api.route("/cameras/:thing_name/groups")
 def list_camera_groups(camera_group_data, thing_name):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
     page = camera_group_data.items(
         request.account_id(),
         thing_name,
-        params=QueryParams(limit=limit, next_token=next_token))
+        params=create_query_params(request))
     return {
         'items': page.items,
         'nextToken': page.next_token
@@ -72,26 +68,14 @@ def list_camera_groups(camera_group_data, thing_name):
 
 @api.route('/cameras/:thing_name/videos')
 def list_camera_videos(motion_videos_data, thing_name):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
-    limit = min(MAX_ITEMS, max(1, limit))
-    next_token = request.queryparams.get('nextToken', None)
-    start_time = request.queryparams.get('startTime', None)
-    end_time = request.queryparams.get('endTime', None)
-    sort_asc = request.queryparams.get('order', 'descending') == 'ascending'
-    sort_filters = sort_filters_for(
-        'motionVideo',
-        start_time=start_time,
-        end_time=end_time,
-        format=timestamp_to_motion
-    )
     page = motion_videos_data.items(
         request.account_id(),
         thing_name,
-        params=QueryParams(
-            sort_ascending=sort_asc,
-            limit=limit,
-            sort_filters=sort_filters,
-            next_token=next_token))
+        params=create_query_params(
+            request=request,
+            sort_order="descending",
+            sort_field="motionVideo",
+            format=timestamp_to_motion))
     return {
         'items': page.items,
         'nextToken': page.next_token
@@ -190,7 +174,7 @@ def delete_camera(
         page = camera_group_data.items(
             request.account_id(),
             thing_name,
-            params=QueryParams(limit=MAX_ITEMS, next_token=next_token))
+            params=QueryParams(next_token=next_token))
         for item in page.items:
             updates.append({
                 'repository': camera_group_data,
