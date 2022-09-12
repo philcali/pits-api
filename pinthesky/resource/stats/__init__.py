@@ -29,7 +29,8 @@ def list_device_health_history(stats_data, thing_name):
         params=create_query_params(
             request=request,
             sort_order='descending',
-            sort_field='SK'
+            sort_field='SK',
+            format=str
         )
     )
     return {
