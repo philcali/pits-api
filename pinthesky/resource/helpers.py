@@ -20,7 +20,7 @@ def create_query_params(
         next_token=request.queryparams.get('nextToken', None),
         sort_ascending=sort_asc,
         sort_filters=sort_filters_for(
-            sort_field=sort_field,
+            field=sort_field,
             start_time=start_time,
             end_time=end_time,
             format=format

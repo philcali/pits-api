@@ -82,6 +82,35 @@ def list_camera_videos(motion_videos_data, thing_name):
     }
 
 
+@api.route('/camera/:thing_name/stats')
+def list_device_health_history(stats_data, thing_name):
+    page = stats_data.items(
+        request.account_id(),
+        thing_name,
+        params=create_query_params(
+            request=request,
+            sort_order='descending',
+            sort_field='SK',
+            format=str
+        )
+    )
+    return {
+        'items': page.items,
+        'nextToken': page.next_token
+    }
+
+
+@api.route('/cameras/:thing_name/stats/:timestamp')
+def get_health_entry(stats_data, thing_name, timestamp):
+    rval = stats_data.get(request.account_id(), thing_name, item_id=timestamp)
+    if rval is None:
+        response.status_code = 404
+        return {
+            'message': f'No entry for {thing_name} at {timestamp}.'
+        }
+    return rval
+
+
 @api.route("/cameras/:thing_name/groups", methods=['POST'])
 def create_camera_groups(camera_group_data, group_camera_data, thing_name):
     input = json.loads(request.body)
