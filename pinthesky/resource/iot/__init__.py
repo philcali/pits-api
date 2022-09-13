@@ -70,6 +70,21 @@ def start_capture_image(iot_data, thing_name):
     }
 
 
+@api.route("/cameras/:thing_name/stats", methods=["POST"])
+def start_camera_health(iot_data, thing_name):
+    health_id = str(uuid4())
+    # TODO: we can match this entry so it shows as pending on the console
+    publish_event(iot_data, thing_name, {
+        "name": "health",
+        "context": {
+            "health_id": health_id
+        }
+    })
+    return {
+        "id": health_id
+    }
+
+
 @api.route("/cameras/:thing_name/captureImage")
 def get_captured_image(s3, bucket_name, image_prefix, thing_name):
     s3key = f'{image_prefix}/{thing_name}/{LATEST_THUMBNAIL}'
