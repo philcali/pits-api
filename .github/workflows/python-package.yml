@@ -42,10 +42,11 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
+      env:
+        AWS_REGION: us-east-1
+        AWS_ACCESS_KEY: fake
+        AWS_SECRET_ACCESS_KEY: fake
       run: |
-        export AWS_REGION=us-east-1 && \
-        export AWS_ACCESS_KEY_ID=fake && \
-        export AWS_SECRET_ACCESS_KEY=fake && \
         pytest --cov=./ --cov-report=xml --cov-fail-under=60
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
