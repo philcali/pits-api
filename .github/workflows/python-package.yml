@@ -43,7 +43,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       env:
-        AWS_REGION: us-east-1
+        AWS_DEFAULT_REGION: us-east-1
         AWS_ACCESS_KEY: fake
         AWS_SECRET_ACCESS_KEY: fake
       run: |
