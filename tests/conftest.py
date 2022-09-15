@@ -14,9 +14,6 @@ def dynamodb_local():
     port = 8080
     proc = subprocess.Popen([
         "java", "-Djava.library.path=dynamodb/DynamoDBLocal_list",
-        "-Daws.region=us-east-1",
-        "-Daws.accessKeyId=fake",
-        "-Daws.secretAccessKey=fake",
         "-jar", "dynamodb/DynamoDBLocal.jar",
         "-port", f'{port}',
         "-inMemory"
@@ -30,7 +27,12 @@ def dynamodb_local():
 
 @pytest.fixture(scope="module")
 def dynamodb(dynamodb_local):
-    return boto3.resource('dynamodb', endpoint_url=dynamodb_local.endpoint)
+    return boto3.resource(
+        'dynamodb',
+        region="us-east-1",
+        aws_access_key_id="fake",
+        aws_session_token="fake",
+        endpoint_url=dynamodb_local.endpoint)
 
 
 @pytest.fixture(scope="module")
