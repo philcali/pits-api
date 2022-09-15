@@ -2,6 +2,7 @@
 
 [![Python package](https://github.com/philcali/pits-api/actions/workflows/python-package.yml/badge.svg)](https://github.com/philcali/pits-api/actions/workflows/python-package.yml)
 [![CodeQL](https://github.com/philcali/pits-api/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/philcali/pits-api/actions/workflows/codeql-analysis.yml)
+[![codecov](https://codecov.io/gh/philcali/pits-api/branch/main/graph/badge.svg?token=8BC4915WK5)](https://codecov.io/gh/philcali/pits-api)
 
 This is the API backend for the `pinthesky` console. In effect, this is a resource server
 authenticated by an AWS Cognito User Pools.

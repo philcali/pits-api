@@ -11,11 +11,11 @@ app_context.inject('group_data', Groups())
 app_context.inject('group_camera_data', GroupsToCameras())
 
 
-@api.route("/groups/:thing_name/cameras")
-def list_group_cameras(group_camera_data, thing_name):
+@api.route("/groups/:group_name/cameras")
+def list_group_cameras(group_camera_data, group_name):
     page = group_camera_data.items(
         request.account_id(),
-        thing_name,
+        group_name,
         params=create_query_params(request))
     return {
         'items': page.items,
@@ -151,7 +151,7 @@ def put_group(group_data, group_name):
 
 @api.route("/groups")
 def list_groups(group_data):
-    group_names = request.queryparams.get('groupName', None)
+    group_names = request.queryparams.get('name', None)
     if group_names is None:
         page = group_data.items(
             request.account_id(),
