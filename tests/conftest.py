@@ -27,7 +27,12 @@ def dynamodb_local():
 
 @pytest.fixture(scope="module")
 def dynamodb(dynamodb_local):
-    return boto3.resource('dynamodb', endpoint_url=dynamodb_local.endpoint)
+    return boto3.resource(
+        'dynamodb',
+        region_name="us-east-1",
+        aws_access_key_id="fake",
+        aws_secret_access_key="fake", 
+        endpoint_url=dynamodb_local.endpoint)
 
 
 @pytest.fixture(scope="module")
