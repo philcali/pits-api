@@ -125,6 +125,7 @@ def start_capture_image(iot_data, thing_name):
         "id": capture_id
     }
 
+
 @api.route("/cameras/:thing_name/captureImage")
 def get_captured_image(s3, bucket_name, image_prefix, thing_name):
     s3key = f'{image_prefix}/{thing_name}/{LATEST_THUMBNAIL}'
