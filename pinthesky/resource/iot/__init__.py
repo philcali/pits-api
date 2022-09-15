@@ -1,16 +1,11 @@
 import boto3
-import json
 import os
-from uuid import uuid4
-from botocore.exceptions import ClientError
 from pinthesky import api
-from pinthesky.globals import app_context, request, response
+from pinthesky.globals import app_context, request
 from pinthesky.resource.helpers import get_limit
-from pinthesky.s3 import generate_presigned_url
 
 
 DATA_ENDPOINT = f'https://{os.getenv("DATA_ENDPOINT")}'
-LATEST_THUMBNAIL = "thumbnail_latest.jpg"
 
 
 app_context.inject('iot', boto3.client('iot'))
@@ -18,12 +13,6 @@ app_context.inject('s3', boto3.client('s3'))
 app_context.inject(
     name='iot_data',
     value=boto3.client('iot-data', endpoint_url=DATA_ENDPOINT))
-
-
-def publish_event(iot_data, thing_name, payload):
-    return iot_data.publish(
-        topic=f'pinthesky/events/{thing_name}/input',
-        payload=bytes(json.dumps(payload), encoding="utf8"))
 
 
 @api.route("/iot/groups")
@@ -53,103 +42,3 @@ def list_iot_things_in_group(iot, group_name):
         'nextToken': response.get('nextToken', None),
         'items': response.get('things', [])
     }
-
-
-@api.route("/cameras/:thing_name/captureImage", methods=["POST"])
-def start_capture_image(iot_data, thing_name):
-    capture_id = str(uuid4())
-    publish_event(iot_data, thing_name, {
-        "name": "capture_image",
-        "context": {
-            "file_name": LATEST_THUMBNAIL,
-            "capture_id": capture_id
-        }
-    })
-    return {
-        "id": capture_id
-    }
-
-
-@api.route("/cameras/:thing_name/stats", methods=["POST"])
-def start_camera_health(iot_data, thing_name):
-    health_id = str(uuid4())
-    # TODO: we can match this entry so it shows as pending on the console
-    publish_event(iot_data, thing_name, {
-        "name": "health",
-        "context": {
-            "health_id": health_id
-        }
-    })
-    return {
-        "id": health_id
-    }
-
-
-@api.route("/cameras/:thing_name/captureImage")
-def get_captured_image(s3, bucket_name, image_prefix, thing_name):
-    s3key = f'{image_prefix}/{thing_name}/{LATEST_THUMBNAIL}'
-    try:
-        resp = s3.head_object(Bucket=bucket_name, Key=s3key)
-        return {
-            "id": s3key,
-            "contentType": resp['ContentType'],
-            "contentLength": resp['ContentLength'],
-            "lastModified": resp['LastModified'].isoformat()
-        }
-    except ClientError as e:
-        if e.response['Error']['Code'] == '404':
-            response.status_code = 404
-            return {
-                "message": "capture image is not available"
-            }
-        else:
-            raise
-
-
-@api.route("/cameras/:thing_name/captureImage/url")
-def get_captured_image_url(s3, bucket_name, image_prefix, thing_name):
-    s3key = f'{image_prefix}/{thing_name}/{LATEST_THUMBNAIL}'
-    return generate_presigned_url(s3, bucket_name, s3key)
-
-
-@api.route("/cameras/:thing_name/configuration")
-def get_camera_configuration(iot_data, thing_name):
-    try:
-        thing_resp = iot_data.get_thing_shadow(
-            thingName=thing_name,
-            shadowName="pinthesky")
-        payload = json.loads(thing_resp['payload'].read())
-        return payload['state']['reported']['camera']
-    except ClientError as e:
-        if e.response['Code'] == 'ResourceNotFoundException':
-            response.status_code = 404
-            return {
-                "message": f'Configuration does not exist for {thing_name}'
-            }
-        raise
-
-
-@api.route("/cameras/:thing_name/configuration", methods=["POST"])
-def update_camera_configuration(iot_data, thing_name):
-    try:
-        configuration = json.loads(request.body)
-        payload = {
-            'state': {
-                'desired': {
-                    'camera': configuration
-                }
-            }
-        }
-        thing_resp = iot_data.update_thing_shadow(
-            thingName=thing_name,
-            shadowName="pinthesky",
-            payload=bytes(json.dumps(payload), encoding="utf8"))
-        rval = json.loads(thing_resp['payload'].read())
-        return rval['state']['desired']['camera']
-    except ClientError as e:
-        if e.response['Code'] == 'ResourceNotFoundException':
-            response.status_code = 404
-            return {
-                'message': f'Thing {thing_name} does not exist'
-            }
-        raise

@@ -3,3 +3,7 @@
 dist
 __pycache__
 .coverage
+# For testing
+dynamodb/*.txt
+dynamodb/*.tar.gz
+dynamodb/DynamoDBLocal*

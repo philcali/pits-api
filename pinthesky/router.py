@@ -36,7 +36,7 @@ class Router:
         return {
             'statusCode': 404,
             'headers': {'content-type': 'text/plain'},
-            'body': "Resource not found"
+            'body': '{"message": "Resource not found"}'
         }
 
     def __dispatch_response(self, ctx, output):

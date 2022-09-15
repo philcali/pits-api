@@ -71,6 +71,6 @@
   "response": {
     "statusCode": 404,
     "headers": {"content-type": "text/plain"},
-    "body": "Resource not found"
+    "body": "{\"message\": \"Resource not found\"}"
   }
 }
