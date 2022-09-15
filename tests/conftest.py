@@ -31,7 +31,7 @@ def dynamodb(dynamodb_local):
         'dynamodb',
         region_name="us-east-1",
         aws_access_key_id="fake",
-        aws_secret_access_key="fake", 
+        aws_secret_access_key="fake",
         endpoint_url=dynamodb_local.endpoint)
 
 

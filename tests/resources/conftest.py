@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 from tests.resources import Resources
 import pytest
 
-@pytest.fixture(scope="module")
 
+@pytest.fixture(scope="module")
 def groups(table):
     assert table.name == 'Pits'
     from pinthesky.resource import groups
