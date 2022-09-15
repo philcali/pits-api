@@ -14,6 +14,9 @@ def dynamodb_local():
     port = 8080
     proc = subprocess.Popen([
         "java", "-Djava.library.path=dynamodb/DynamoDBLocal_list",
+        "-Daws.region=us-east-1",
+        "-Daws.accessKeyId=fake",
+        "-Daws.secretAccessKey=fake",
         "-jar", "dynamodb/DynamoDBLocal.jar",
         "-port", f'{port}',
         "-inMemory"
