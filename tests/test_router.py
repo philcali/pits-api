@@ -58,9 +58,8 @@ def delete_pet(petId):
 
 
 def test_router():
-    events = os.listdir('events')
+    events = [file for file in os.listdir('events') if ".json" in file]
     for test_event in events:
-        print(test_event)
         with open(os.path.join('events', test_event)) as f:
             event = json.loads(f.read())
         assert event['response'] == api(event=event['event'], context={})
