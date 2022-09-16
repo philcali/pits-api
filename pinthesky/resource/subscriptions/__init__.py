@@ -33,11 +33,10 @@ def get_subscription(subscription_data, sns, id):
         subscriber = sns.Subscription(arn=sub_data['arn'])
         try:
             attrs = subscriber.attributes
+            for key, value in sub_data.items():
+                resp_data[key] = value
             if 'FilterPolicy' in attrs:
                 resp_data['filter'] = json.loads(attrs['FilterPolicy'])
-            resp_data['id'] = sub_data['id']
-            resp_data['protocol'] = sub_data['protocol']
-            resp_data['endpoint'] = sub_data['endpoint']
         except ClientError as e:
             if e.response['Error']['Code'] != 'NotFound':
                 raise
@@ -95,7 +94,7 @@ def put_subscription(subscription_data, sns, id):
     if 'id' not in resp_data:
         response.status_code = 404
         return {
-            'message': f'Subscription {sub_data.id} does not exist.'
+            'message': f'Subscription {id} does not exist.'
         }
     return resp_data
 
