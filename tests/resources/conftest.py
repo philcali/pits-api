@@ -7,6 +7,30 @@ import pytest
 
 
 @pytest.fixture(scope="module")
+def tags(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import tags
+
+    return Resources(tags)
+
+
+@pytest.fixture(scope="module")
+def videos(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import videos
+
+    return Resources(videos)
+
+
+@pytest.fixture(scope="module")
+def subscriptions(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import subscriptions
+
+    return Resources(subscriptions)
+
+
+@pytest.fixture(scope="module")
 def groups(table):
     assert table.name == 'Pits'
     from pinthesky.resource import groups

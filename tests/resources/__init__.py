@@ -14,6 +14,22 @@ class Resources():
     def __call__(self, *args, **kwds):
         return self.request('/'.join(args), **kwds)
 
+    def __read_event(self, path, method="GET", query_params={}, body=None):
+        with open('events/resources/request.template.json') as f:
+            content = f.read()
+            template = Template(content)
+            event = json.loads(template.safe_substitute(
+                path=path,
+                method=method,
+                body=json.dumps(json.dumps(body)) if body is not None else '""'
+            ))
+            event['queryStringParameters'] = query_params
+        return event
+
+    def account_id(self):
+        event = self.__read_event("/")
+        return event['requestContext']['accountId']
+
     def request(self, name="", method='GET', query_params={}, body=None):
         path = f'/{self.resource_name}{name}'
         with open('events/resources/request.template.json') as f:

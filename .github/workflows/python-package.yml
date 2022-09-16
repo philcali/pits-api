@@ -47,7 +47,7 @@ jobs:
         AWS_ACCESS_KEY: fake
         AWS_SECRET_ACCESS_KEY: fake
       run: |
-        pytest --cov=./ --cov-report=xml --cov-fail-under=60
+        pytest --cov=./ --cov-report=xml --cov-fail-under=80
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

@@ -12,6 +12,11 @@
   "requestContext": {
     "accountId": "123456789012",
     "authorizer": {
+      "jwt": {
+        "claims": {
+          "username": "nobody"
+        }
+      }
     },
     "domainName": "id.execute-api.us-east-1.amazonaws.com",
     "domainPrefix": "id",

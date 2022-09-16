@@ -35,15 +35,15 @@ def test_groups_crud_workflow(cameras, groups):
     }).code == 200
 
     assert groups('/Home/cameras', method='POST', body={
-        'cameras': ['homeCamera1']
+        'cameras': [f'homeCamera{i}' for i in range(1, 3)]
     }).code == 200
 
     assert cameras('/homeCamera1/groups').body["items"][0]['id'] == 'Home'
     assert groups('/Home/cameras').body["items"][0]['id'] == 'homeCamera1'
 
     assert groups('/Home/cameras/homeCamera1', method="DELETE").code == 200
-
     assert cameras('/homeCamera1/groups').body["items"] == []
+    assert cameras('/homeCamera2/groups/Home', method="DELETE").code == 200
     assert groups('/Home/cameras').body["items"] == []
 
     assert groups('/Home', method="DELETE").code == 200

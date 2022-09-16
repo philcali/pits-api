@@ -57,12 +57,42 @@ def table(dynamodb):
             {
                 'AttributeName': 'SK',
                 'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'GS1-PK',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'createTime',
+                'AttributeType': 'N'
             }
         ],
         ProvisionedThroughput={
             'ReadCapacityUnits': 5,
             'WriteCapacityUnits': 5
-        }
+        },
+        GlobalSecondaryIndexes=[
+            {
+                'IndexName': 'GS1',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'GS1-PK',
+                        'KeyType': 'HASH'
+                    },
+                    {
+                        'AttributeName': 'createTime',
+                        'KeyType': 'RANGE'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                },
+                'ProvisionedThroughput': {
+                    'ReadCapacityUnits': 5,
+                    'WriteCapacityUnits': 5
+                }
+            }
+        ]
     )
     table.wait_until_exists()
     app_context.inject('dynamodb', dynamodb)
