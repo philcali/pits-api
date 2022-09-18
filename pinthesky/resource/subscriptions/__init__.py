@@ -30,8 +30,8 @@ def get_subscription(subscription_data, sns, id):
         item_id=id)
     resp_data = {}
     if sub_data is not None:
-        subscriber = sns.Subscription(arn=sub_data['arn'])
         try:
+            subscriber = sns.Subscription(arn=sub_data['arn'])
             attrs = subscriber.attributes
             for key, value in sub_data.items():
                 resp_data[key] = value
