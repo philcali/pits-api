@@ -34,7 +34,7 @@ def test_stats_workflow(stats, cameras):
         historical_views[thing_name] = []
         # Let's inject some historical data
         for j in range(0, 9):
-            historical_views[thing_name].append(stats_data.create(
+            historical_views[thing_name].insert(0, stats_data.create(
                 stats.account_id(),
                 thing_name,
                 item={
