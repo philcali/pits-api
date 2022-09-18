@@ -93,7 +93,7 @@ def list_camera_videos(motion_videos_data, thing_name):
     }
 
 
-@api.route('/camera/:thing_name/stats')
+@api.route('/cameras/:thing_name/stats')
 def list_device_health_history(stats_data, thing_name):
     page = stats_data.items(
         request.account_id(),

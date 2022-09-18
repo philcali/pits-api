@@ -1,4 +1,5 @@
 from contextvars import copy_context
+import traceback
 from pinthesky.globals import request, response, app_context
 import inspect
 import json
@@ -82,7 +83,8 @@ class Router:
         try:
             return ctx.run(route, **kwargs)
         except Exception as e:
-            logger.error(f"Failed to run {route}: {e}")
+            trace = ''.join(traceback.format_exception(e))
+            logger.error(f"Failed to run {route}: {trace}")
             self.__fail(ctx)
             return {
                 'message': 'Internal server error'

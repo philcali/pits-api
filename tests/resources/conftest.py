@@ -39,6 +39,14 @@ def groups(table):
 
 
 @pytest.fixture(scope="module")
+def stats(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import stats
+
+    return Resources(stats)
+
+
+@pytest.fixture(scope="module")
 def cameras(table):
     assert table.name == 'Pits'
     from pinthesky.resource import cameras
