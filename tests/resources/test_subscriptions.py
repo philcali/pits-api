@@ -21,7 +21,10 @@ def created_subs():
     created_subs = {}
 
     def create(Protocol, Endpoint, ReturnSubscriptionArn, Attributes=None):
-        id = str(uuid4())
+        if Endpoint == 'nobody@gmail.com':
+            id = str(uuid4())
+        else:
+            id = 'fail'
         arn = ':'.join(["arn:test", id])
         created_subs[id] = Subscriber(arn=arn)
         return created_subs[id]
@@ -30,13 +33,18 @@ def created_subs():
     topic.subscribe.side_effect = create
 
     sns.Subscription = MagicMock()
-    subscription = MagicMock()
-    sns.Subscription.return_value = subscription
 
     def get(arn):
         id = arn.split(':')[-1]
-        if id in created_subs:
-            return created_subs[id]
+        if id == 'fail':
+            raise ClientError({
+                'Error': {
+                    'Code': 'NotAuthorized'
+                }
+            }, "sns:GetSubscriptionAttrinutes")
+        elif id in created_subs:
+            subscriber = MagicMock()
+            return subscriber
         else:
             raise ClientError({
                 'Error': {
@@ -44,7 +52,7 @@ def created_subs():
                 }
             }, "sns:GetSubscriptionAttributes")
 
-    subscription.side_effect = get
+    sns.Subscription.side_effect = get
 
     app_context.inject('sns', sns, force=True)
     app_context.inject('topic_arn', "arn:test", force=True)
@@ -81,3 +89,12 @@ def test_subscription_workflow(subscriptions, created_subs):
 
     # delete
     assert subscriptions(f'/{sub["id"]}', method="DELETE").code == 200
+
+    # induced failure
+    created_failure = subscriptions(method="POST", body={
+        'protocol': 'EMAIL',
+        'endpoint': 'failure@gmail.com'
+    })
+
+    failure = created_failure.body
+    assert subscriptions(f'/{failure["id"]}').code == 500

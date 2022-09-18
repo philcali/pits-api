@@ -84,7 +84,7 @@ class Router:
             return ctx.run(route, **kwargs)
         except Exception as e:
             trace = ''.join(traceback.format_exception(e))
-            logger.error(f"Failed to run {route}: {trace}")
+            logger.error(f"Failed to run {route}:\n{trace}")
             self.__fail(ctx)
             return {
                 'message': 'Internal server error'
