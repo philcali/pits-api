@@ -83,7 +83,10 @@ class Router:
         try:
             return ctx.run(route, **kwargs)
         except Exception as e:
-            trace = ''.join(traceback.format_exception(e))
+            trace = ''.join(traceback.format_exception(
+                e,
+                value=e,
+                tb=e.__traceback__))
             logger.error(f"Failed to run {route}:\n{trace}")
             self.__fail(ctx)
             return {
