@@ -58,6 +58,6 @@ def test_stats_workflow(stats, cameras):
         assert cameras(f'/{key}/stats').body['items'] == items
 
     # Get a single data point
-    first = historical_views['PitsCamera1'][0]
+    first = historical_views['PitsCamera1'][-1]
     assert cameras(f'/PitsCamera1/stats/{start_time}').body == first
     assert cameras(f'/Farts/stats/{start_time}').code == 404
