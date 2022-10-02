@@ -46,7 +46,8 @@ def test_job_operations(jobs, groups, cameras):
     assert create.body['jobId'] in tracking
     reboot_template = Template(JOB_TYPES['reboot'])
     reboot_doc = reboot_template.safe_substitute(user='root')
-    assert  reboot_doc == tracking[create.body['jobId']]
+    assert reboot_doc == tracking[create.body['jobId']]
+
     assert json.loads(reboot_doc) == {
         "_comment": "Reboot the Pi In The Sky Camera hardware",
         "version": "1.0",
