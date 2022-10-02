@@ -222,6 +222,23 @@ def get_health_entry(stats_data, thing_name, timestamp):
     return rval
 
 
+@api.route('/cameras/:thing_name/jobs')
+def list_jobs_for_camera(camera_job_data, thing_name, first_index):
+    page = camera_job_data.items_index(
+        request.account_id(),
+        thing_name,
+        index_name=first_index,
+        params=create_query_params(
+            request=request,
+            sort_order="descending"
+        )
+    )
+    return {
+        'items': page.items,
+        'next_token': page.next_token
+    }
+
+
 @api.route("/cameras/:thing_name/groups", methods=['POST'])
 def create_camera_groups(camera_group_data, group_camera_data, thing_name):
     input = json.loads(request.body)
