@@ -38,6 +38,10 @@ def test_groups_crud_workflow(cameras, groups):
         'cameras': [f'homeCamera{i}' for i in range(1, 3)]
     }).code == 200
 
+    assert cameras('/homeCamera1/groups', method='POST', body={
+        'groups': ['Home']
+    }).code == 200
+
     assert cameras('/homeCamera1/groups').body["items"][0]['id'] == 'Home'
     assert groups('/Home/cameras').body["items"][0]['id'] == 'homeCamera1'
 

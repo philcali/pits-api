@@ -303,3 +303,17 @@ class Tags(Repository):
 class DeviceHealth(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="DeviceHealth")
+
+
+class DeviceJobs(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="DeviceJobs", fields_to_keys={
+            'jobId': 'SK'
+        })
+
+
+class DeviceToJobs(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="DeviceToJobs", fields_to_keys={
+            'jobId': 'SK'
+        })

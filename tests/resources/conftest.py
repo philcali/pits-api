@@ -47,6 +47,21 @@ def stats(table):
 
 
 @pytest.fixture(scope="module")
+def jobs(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import jobs
+
+    return Resources(jobs)
+
+
+@pytest.fixture(scope="module")
+def iot():
+    from pinthesky.resource import iot
+
+    return Resources(iot)
+
+
+@pytest.fixture(scope="module")
 def cameras(table):
     assert table.name == 'Pits'
     from pinthesky.resource import cameras
