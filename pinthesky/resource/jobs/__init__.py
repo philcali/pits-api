@@ -152,6 +152,14 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
     template = Template(JOB_TYPES[payload['type']])
     parameters = payload.get('parameters', {'user': 'root'})
     kwargs['document'] = template.safe_substitute(**parameters)
+    kwargs['jobExecutionsRetryConfig'] = {
+        'criteriaList': [
+            {
+                "failureType": "FAILED",
+                "numberOfRetries": 2
+            }
+        ]
+    }
     resp = iot.create_job(**kwargs)
     item = {
         'jobId': resp['jobId'],

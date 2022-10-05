@@ -31,8 +31,16 @@ def test_job_operations(jobs, groups, cameras):
 
     tracking = {}
 
-    def create_job(jobId, targets, document, description):
+    def create_job(jobId, targets, document, description, **kwargs):
         tracking[jobId] = document
+        assert kwargs['jobExecutionsRetryConfig'] == {
+            'criteriaList': [
+                {
+                    'failureType': 'FAILED',
+                    'numberOfRetries': 2
+                }
+            ]
+        }
         assert targets == [
             'arn:aws:iot:us-east-1:123456789012:thing/first',
             'arn:aws:iot:us-east-1:123456789012:thing/second'
