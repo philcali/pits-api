@@ -4,6 +4,7 @@ from string import Template
 import json
 
 Response = namedtuple('Response', field_names=['code', 'body', 'headers'])
+Context = namedtuple('Context', field_names=['invoked_function_arn'])
 
 
 class Resources():
@@ -41,7 +42,17 @@ class Resources():
                 body=json.dumps(json.dumps(body)) if body is not None else '""'
             ))
             event['queryStringParameters'] = query_params
-        res = api(event=event, context={})
+        res = api(event=event, context=Context(
+            invoked_function_arn=':'.join([
+                'arn',
+                'aws',
+                'lambda',
+                'us-east-1',
+                self.account_id(),
+                'function',
+                'TestFunction'
+            ])
+        ))
         return Response(
             code=res['statusCode'],
             body=json.loads(res['body']) if res['body'] is not None else "",

@@ -32,7 +32,10 @@ def test_job_operations(jobs, groups, cameras):
 
     def create_job(jobId, targets, document, description):
         tracking[jobId] = document
-        assert targets == ['first', 'second']
+        assert targets == [
+            'arn:aws:iot:us-east-1:123456789012:thing/first',
+            'arn:aws:iot:us-east-1:123456789012:thing/second'
+        ]
         return {
             'jobId': jobId,
             'description': description
@@ -79,7 +82,7 @@ def test_job_operations(jobs, groups, cameras):
         return {
             'executionSummaries': [
                 {
-                    'thingArn': 'arn:aws:iot:us:012345678912:thing:first',
+                    'thingArn': 'arn:aws:iot:us:012345678912:thing/first',
                     'jobExecutionSummary': {
                         'status': 'QUEUED',
                         'executionNumber': 123,

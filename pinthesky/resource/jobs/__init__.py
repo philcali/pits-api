@@ -106,14 +106,26 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
     payload = json.loads(request.body)
     create_time = floor(time())
     job_id = str(uuid4())
+    arn_parts = request.context.invoked_function_arn.split(':')
+    arn_prefix = ':'.join([
+        'arn',
+        arn_parts[1],
+        'iot',
+        arn_parts[3],
+        request.account_id(),
+        'thing'
+    ])
     if 'type' not in payload or payload['type'] not in JOB_TYPES:
         response.status_code = 400
         return {
-            'message': f'Invalid job type. Valid types are {JOB_TYPES.keys()}'
+            'message': f'Invalid type. Valid types: {list(JOB_TYPES.keys())}'
         }
+
+    def thing_arn(thing_name):
+        return f'{arn_prefix}/{thing_name}'
     kwargs = {
         'jobId': job_id,
-        'targets': payload.get('cameras', []),
+        'targets': list(map(thing_arn, payload.get('cameras', []))),
         'description': payload.get('description', f'A {payload["type"]} job')
     }
     for group in payload.get('groups', []):
@@ -125,7 +137,7 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
                 group,
                 params=params)
             for item in page.items:
-                kwargs['targets'].append(item['id'])
+                kwargs['targets'].append(thing_arn(item['id']))
             params = QueryParams(next_token=page.next_token)
             truncated = params.next_token is not None
     if len(kwargs['targets']) == 0:
@@ -152,14 +164,15 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
         }
     }]
     for camera in kwargs['targets']:
+        thing_name = camera.split('/')[-1]
         updates.append({
             'repository': camera_job_data,
-            'parent_ids': [camera],
+            'parent_ids': [thing_name],
             'item': {
                 **item,
                 'GS1-PK': camera_job_data.make_hash_key(
                     request.account_id(),
-                    camera
+                    thing_name
                 )
             }
         })
@@ -189,7 +202,7 @@ def list_job_executions(job_data, job_id, iot):
             new_item[k] = v
         items.append({
             **new_item,
-            'thingName': summary['thingArn'].split(':')[-1],
+            'thingName': summary['thingArn'].split('/')[-1],
         })
     return {
         'items': items,
