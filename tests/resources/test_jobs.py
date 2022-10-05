@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from string import Template
+from time import sleep
 from unittest.mock import MagicMock
 from pinthesky.database import MAX_ITEMS
 
@@ -45,7 +46,13 @@ def test_job_operations(jobs, groups, cameras):
     iot_client.create_job.side_effect = create_job
 
     create = jobs(method="POST", body={'type': 'reboot', 'groups': ['Home']})
+    sleep(1)
+    create_up = jobs(
+        method="POST",
+        body={'type': 'update', 'cameras': ['first', 'second']}
+    )
     assert create.code == 200
+    assert create_up.code == 200
     assert create.body['jobId'] in tracking
     reboot_template = Template(JOB_TYPES['reboot'])
     reboot_doc = reboot_template.safe_substitute(user='root')
@@ -60,7 +67,8 @@ def test_job_operations(jobs, groups, cameras):
                     "name": "Reboot Camera",
                     "type": "runHandler",
                     "input": {
-                        "handler": "reboot.sh"
+                        "handler": "reboot.sh",
+                        "path": "default"
                     },
                     "runAsUser": "root"
                 }
@@ -68,10 +76,53 @@ def test_job_operations(jobs, groups, cameras):
         ]
     }
 
-    assert jobs().body['items'][0] == create.body
+    assert json.loads(tracking[create_up.body['jobId']]) == {
+        "_comment": "Updates the Pi In The Sky Device software",
+        "version": "1.0",
+        "steps": [
+            {
+                "action": {
+                    "name": "Stop Service",
+                    "type": "runHandler",
+                    "input": {
+                        "handler": "stop-services.sh",
+                        "args": ["pinthesky"],
+                        "path": "default"
+                    },
+                    "runAsUser": "root"
+                }
+            },
+            {
+                "action": {
+                    "name": "Upgrade Software",
+                    "type": "runHandler",
+                    "input": {
+                        "handler": "upgrade-pinthesky.sh",
+                        "args": ["$version"],
+                        "path": "default"
+                    },
+                    "runAsUser": "root"
+                }
+            },
+            {
+                "action": {
+                    "name": "Start Service",
+                    "type": "runHandler",
+                    "input": {
+                        "handler": "start-services.sh",
+                        "args": ["pinthesky"],
+                        "path": "default"
+                    },
+                    "runAsUser": "root"
+                }
+            }
+        ]
+    }
 
-    assert cameras('/first/jobs').body['items'][0] == create.body
-    assert cameras('/second/jobs').body['items'][0] == create.body
+    assert jobs().body['items'][1] == create.body
+
+    assert cameras('/first/jobs').body['items'][1] == create.body
+    assert cameras('/second/jobs').body['items'][1] == create.body
 
     assert jobs('/farts/executions').code == 404
 

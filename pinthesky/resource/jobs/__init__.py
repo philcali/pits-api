@@ -26,7 +26,8 @@ JOB_TYPES = {
                 "name": "Reboot Camera",
                 "type": "runHandler",
                 "input": {
-                    "handler": "reboot.sh"
+                    "handler": "reboot.sh",
+                    "path": "default"
                 },
                 "runAsUser": "$user"
             }
@@ -48,10 +49,11 @@ JOB_TYPES = {
                     "handler": "stop-services.sh",
                     "args": [
                         "pinthesky"
-                    ]
+                    ],
+                    "path": "default"
                 },
                 "runAsUser": "$user"
-            },
+            }
         },
         {
             "action": {
@@ -61,7 +63,8 @@ JOB_TYPES = {
                     "handler": "upgrade-pinthesky.sh",
                     "args": [
                         "$version"
-                    ]
+                    ],
+                    "path": "default"
                 },
                 "runAsUser": "$user"
             }
@@ -74,7 +77,8 @@ JOB_TYPES = {
                     "handler": "start-services.sh",
                     "args": [
                         "pinthesky"
-                    ]
+                    ],
+                    "path": "default"
                 },
                 "runAsUser": "$user"
             }
