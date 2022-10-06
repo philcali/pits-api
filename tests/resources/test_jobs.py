@@ -1,4 +1,6 @@
 import json
+from math import floor
+from botocore.exceptions import ClientError
 from datetime import datetime
 from string import Template
 from time import sleep
@@ -129,6 +131,8 @@ def test_job_operations(jobs, groups, cameras):
 
     assert jobs().body['items'][1] == create.body
 
+    assert jobs('/farts').code == 404
+
     assert cameras('/first/jobs').body['items'][1] == create.body
     assert cameras('/second/jobs').body['items'][1] == create.body
 
@@ -158,3 +162,75 @@ def test_job_operations(jobs, groups, cameras):
 
     url = f'/{create.body["jobId"]}/executions'
     assert jobs(url).body['items'][0]['thingName'] == 'first'
+
+    def describe_job(jobId):
+        assert jobId in tracking
+        return {
+            'job': {
+                'status': 'COMPLETED',
+                'description': 'A something job'
+            }
+        }
+
+    iot_client.describe_job = MagicMock()
+    iot_client.describe_job.side_effect = describe_job
+
+    assert jobs(f'/{create.body["jobId"]}').body == {
+        **create.body,
+        'status': 'COMPLETED',
+        'description': 'A something job'
+    }
+
+    queued_at = datetime.now()
+
+    def describe_job_execution(jobId, thingName, executionNumber=None):
+        if thingName == 'farts':
+            raise ClientError({
+                'Error': {
+                    'Code': 'ResourceNotFoundException'
+                }
+            }, 'DescribeJobExecution')
+        thing_arn = f'arn:aws:iot:us-east-1:123456789012:thing/{thingName}'
+        number = executionNumber if executionNumber is not None else 1
+        return {
+            'execution': {
+                'jobId': jobId,
+                'status': 'FAILED',
+                'queuedAt': queued_at,
+                'thingArn': thing_arn,
+                'executionNumber': number
+            }
+        }
+
+    iot_client.describe_job_execution = MagicMock()
+    iot_client.describe_job_execution.side_effect = describe_job_execution
+
+    assert jobs(f'/{create.body["jobId"]}/executions/farts').code == 404
+    assert jobs(f'/{create.body["jobId"]}/executions/first').body == {
+        'jobId': create.body["jobId"],
+        'status': 'FAILED',
+        'queuedAt': floor(queued_at.timestamp()),
+        'executionNumber': 1,
+        'thingName': 'first'
+    }
+
+    iot_client.update_job = MagicMock()
+    iot_client.cancel_job = MagicMock()
+
+    assert jobs('/farts', method="PUT", body={}).code == 404
+    updated = jobs(f'/{create.body["jobId"]}', method="PUT", body={
+        'status': 'CANCEL',
+        'comment': 'This job sucks, killing it'
+    })
+    assert updated.body['status'] == 'CANCELLED'
+    iot_client.cancel_job.assert_called_once()
+
+    assert jobs(f'/{create.body["jobId"]}', method="PUT", body={
+        'description': 'This is an updated job'
+    }).code == 200
+    iot_client.update_job.assert_called_once()
+
+    iot_client.delete_job = MagicMock()
+    jobs(f'/{create.body["jobId"]}', method="DELETE")
+    iot_client.delete_job.assert_called_once()
+    assert jobs(f'/{create.body["jobId"]}').code == 404
