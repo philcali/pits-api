@@ -4,6 +4,7 @@ from math import floor
 from string import Template
 from time import time
 from uuid import uuid4
+from botocore.exceptions import ClientError
 from pinthesky.database import DeviceJobs, DeviceToJobs, QueryParams, Repository
 from pinthesky.globals import app_context, request, response
 from pinthesky.resource import api
@@ -12,6 +13,17 @@ from pinthesky.resource.helpers import create_query_params, get_limit
 
 app_context.inject('job_data', DeviceJobs())
 app_context.inject('camera_job_data', DeviceToJobs())
+
+
+def _convert_cloud_to_dto(item):
+    new_item = {}
+    for k, v in item.items():
+        if k == 'thingArn':
+            continue
+        if isinstance(v, datetime):
+            v = floor(v.timestamp())
+        new_item[k] = v
+    return new_item
 
 
 JOB_TYPES = {
@@ -152,6 +164,14 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
     template = Template(JOB_TYPES[payload['type']])
     parameters = payload.get('parameters', {'user': 'root'})
     kwargs['document'] = template.safe_substitute(**parameters)
+    kwargs['jobExecutionsRetryConfig'] = payload.get('retryConfig', {
+        'criteriaList': [
+            {
+                "failureType": "FAILED",
+                "numberOfRetries": 2
+            }
+        ]
+    })
     resp = iot.create_job(**kwargs)
     item = {
         'jobId': resp['jobId'],
@@ -184,6 +204,47 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
     return item
 
 
+@api.route('/jobs/:job_id')
+def describe_job(job_data, job_id, iot):
+    job = job_data.get(request.account_id(), item_id=job_id)
+    if job is None:
+        response.status_code = 404
+        return {
+            'message': f'Job with id {job_id} does not exist.'
+        }
+    resp = iot.describe_job(jobId=job_id)
+    return {
+        **job,
+        'status': resp['job']['status'],
+        'description': resp['job']['description']
+    }
+
+
+@api.route('/jobs/:job_id', methods=['PUT'])
+def update_job(job_data, job_id, iot):
+    job = job_data.get(request.account_id(), item_id=job_id)
+    if job is None:
+        response.status_code = 404
+        return {
+            'message': f'Job with id {job_id} does not exist.'
+        }
+    payload = json.loads(request.body)
+    item = {**payload, 'jobId': job_id}
+    kwargs = {'jobId': job_id}
+    if 'status' in payload and payload['status'] == 'CANCEL':
+        iot.cancel_job(**kwargs)
+        item['status'] = 'CANCELLED'
+    else:
+        iot.update_job(**kwargs)
+    return job_data.update(request.account_id(), item=item)
+
+
+@api.route('/jobs/:job_id', methods=['DELETE'])
+def delete_job(job_data, job_id, iot):
+    iot.delete_job(jobId=job_id)
+    job_data.delete(request.account_id(), item_id=job_id)
+
+
 @api.route('/jobs/:job_id/executions')
 def list_job_executions(job_data, job_id, iot):
     job = job_data.get(request.account_id(), item_id=job_id)
@@ -199,11 +260,7 @@ def list_job_executions(job_data, job_id, iot):
     resp = iot.list_job_executions_for_job(**kwargs)
     items = []
     for summary in resp.get('executionSummaries', []):
-        new_item = {}
-        for k, v in summary['jobExecutionSummary'].items():
-            if isinstance(v, datetime):
-                v = floor(v.timestamp())
-            new_item[k] = v
+        new_item = _convert_cloud_to_dto(summary['jobExecutionSummary'])
         items.append({
             **new_item,
             'thingName': summary['thingArn'].split('/')[-1],
@@ -212,3 +269,23 @@ def list_job_executions(job_data, job_id, iot):
         'items': items,
         'nextToken': resp.get('nextToken', None)
     }
+
+
+@api.route('/jobs/:job_id/executions/:thing_name')
+def describe_job_execution(job_id, iot, thing_name):
+    kwargs = {'jobId': job_id, 'thingName': thing_name}
+    if 'executionId' in request.queryparams:
+        kwargs['executionNumber'] = request.queryparams['executionId']
+    try:
+        execution = iot.describe_job_execution(**kwargs)
+        return {
+            **_convert_cloud_to_dto(execution['execution']),
+            'thingName': thing_name
+        }
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            response.status_code = 404
+            return {
+                'message': f'Job {job_id} does not exist for {thing_name}'
+            }
+        raise
