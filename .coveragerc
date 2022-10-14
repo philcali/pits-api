@@ -1,4 +1,5 @@
 [run]
 omit =
     tests/*
+    pinthesky/__main__.py
     setup.py
