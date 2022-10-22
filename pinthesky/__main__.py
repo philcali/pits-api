@@ -5,6 +5,7 @@ import os
 import socket
 import subprocess
 import sys
+from botocore.exceptions import ClientError
 from collections import namedtuple
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -14,6 +15,65 @@ from uuid import uuid4
 
 
 Context = namedtuple('Context', field_names=['invoked_function_arn'])
+RequiredParams = {
+    'iot:describe_thing': ['thingName'],
+    'iot:list_things_in_thing_group': ['thingGroupName'],
+    'iot_data:get_thing_shadow': ['thingName'],
+    'iot_data:update_thing_shadow': ['thingName']
+}
+MutableOperations = {
+    'iot_data:update_thing_shadow': ['thingName']
+}
+
+
+class MockOperation:
+    def __init__(self, service, operation, resources) -> None:
+        self.service = service
+        self.operation = operation
+        self.resources = resources
+
+    def __call__(self, *args, **kwds):
+        key = f'{self.service}:{self.operation}'
+        file_name = f'{self.operation}.json'
+        if key in RequiredParams:
+            parts = []
+            for field in RequiredParams[key]:
+                if field not in kwds:
+                    raise ClientError({
+                        'Error': {
+                            'Code': 'InvalidInputException'
+                        }
+                    }, self.operation)
+                parts.append(kwds[field])
+            file_name = os.path.join(
+                self.operation,
+                f'{"_".join(parts)}.json'
+            )
+        resp_file = os.path.join(
+            self.resources,
+            self.service,
+            file_name
+        )
+        if not os.path.exists(resp_file):
+            ClientError({
+                'Error': {
+                    'Code': 'ResourceNotFoundException'
+                }
+            }, self.operation)
+        with open(resp_file, 'r') as f:
+            return json.loads(f.read())
+
+
+class MockSDK:
+    def __init__(self, service, resources) -> None:
+        self.service = service
+        self.resources = resources
+
+    def __getattr__(self, __name: str):
+        return MockOperation(
+            service=self.service,
+            operation=__name,
+            resources=self.resources)
 
 
 class RouterRequet(BaseHTTPRequestHandler):
@@ -293,6 +353,16 @@ def _create_parser():
         help="spins up a local DynamoDB server"
     )
     parser.add_argument(
+        '--iot-local',
+        action='store_true',
+        help="uses a mock version of the AWS IoT SDK"
+    )
+    parser.add_argument(
+        "--mock-resources",
+        default=os.curdir,
+        help="path to find mocked resource responses"
+    )
+    parser.add_argument(
         "--dynamodb-port",
         default="8000",
         help="the port used for the local DynamoDB server"
@@ -320,6 +390,12 @@ def main():
         gen_dynamodb = _override_local_dynamodb(args)
         gen_table = _create_local_table(next(gen_dynamodb))
         next(gen_table)
+    if args.iot_local:
+        print(f'Mocking AWS IoT resources in {args.mock_resources}')
+        iot = MockSDK('iot', args.mock_resources)
+        iot_data = MockSDK('iot_data', args.mock_resources)
+        app_context.inject('iot', iot, force=True)
+        app_context.inject('iot_data', iot_data)
 
     def _get_best_family(*address):
         infos = socket.getaddrinfo(
