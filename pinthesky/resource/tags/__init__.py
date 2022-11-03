@@ -99,7 +99,7 @@ def delete_tag(tag_data, tag_video_data, video_tag_data, tag_name):
                 }
             })
         next_token = page.next_token
-        truncated = next_token is None
+        truncated = next_token is not None
     Repository.batch_write(request.account_id(), updates=updates)
 
 
