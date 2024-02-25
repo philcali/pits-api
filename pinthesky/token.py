@@ -6,10 +6,10 @@ import json
 
 
 class TokenMarshaller:
-    def encrypt(self, hash_key, response):
+    def encrypt(self, hash_key, header, last_key):
         pass
 
-    def decrypt(self, hash_key, next_token):
+    def decrypt(self, hash_key, header, next_token):
         pass
 
 
