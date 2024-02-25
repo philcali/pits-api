@@ -2,7 +2,7 @@ from botocore.exceptions import ClientError
 from datetime import datetime
 from pinthesky.globals import app_context
 from unittest.mock import MagicMock
-from tests.resources import Resources
+from resources import Resources
 import pytest
 
 

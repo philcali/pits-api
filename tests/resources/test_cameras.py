@@ -76,6 +76,15 @@ def test_camera_crud_workflow(cameras):
     assert cameras('/PitsCamera1/captureImage').code == 200
     assert cameras('/PitsCamera2/captureImage').code == 404
 
+    # Send a capture video request
+    assert cameras(
+        f'/{cam1["thingName"]}/captureVideo',
+        method='POST',
+        body={
+            "durationInSeconds": 20
+        }
+    ).code == 200
+
     # Send a health request
     assert cameras(
         f'/{cam1["thingName"]}/stats',
