@@ -12,6 +12,7 @@ from pinthesky.s3 import generate_presigned_url
 
 
 LATEST_THUMBNAIL = "thumbnail_latest.jpg"
+DEFAULT_VIDEO_DURATION = 30
 
 
 app_context.inject('camera_data', Cameras())
@@ -119,6 +120,26 @@ def start_capture_image(iot_data, thing_name):
         "context": {
             "file_name": LATEST_THUMBNAIL,
             "capture_id": capture_id
+        }
+    })
+    return {
+        "id": capture_id
+    }
+
+
+@api.route("/cameras/:thing_name/captureVideo", methods=["POST"])
+def start_capture_video(iot_data, thing_name):
+    capture_id = str(uuid4())
+    body = json.loads(request.body) if request.body != "" else {}
+    # When requested, we will default to a 30 second buffer.
+    duration = DEFAULT_VIDEO_DURATION
+    if "durationInSeconds" in body:
+        duration = body['durationInSeconds']
+    publish_event(iot_data, thing_name, {
+        "name": "capture_video",
+        "context": {
+            "capture_id": capture_id,
+            "duration": duration,
         }
     })
     return {
