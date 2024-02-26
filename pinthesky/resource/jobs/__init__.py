@@ -27,6 +27,26 @@ def _convert_cloud_to_dto(item):
 
 
 JOB_TYPES = {
+    'shutdown':
+    """
+{
+    "_comment": "Shuts down the Pi In The Sky Camera hardware",
+    "version": "1.0",
+    "steps": [
+        {
+            "action": {
+                "name": "Shutdown Camera",
+                "type": "runHandler",
+                "input": {
+                    "handler": "shutdown.sh",
+                    "path": "default"
+                },
+                "runAsUser": "$user"
+            }
+        }
+    ]
+}
+    """,
     'reboot':
     """
 {
