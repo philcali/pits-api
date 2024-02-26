@@ -55,6 +55,14 @@ def jobs(table):
 
 
 @pytest.fixture(scope="module")
+def jobTypes(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import jobTypes
+
+    return Resources(jobTypes)
+
+
+@pytest.fixture(scope="module")
 def iot():
     from pinthesky.resource import iot
 
