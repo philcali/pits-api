@@ -29,7 +29,7 @@ def _create_job_type(job_name):
 @api.route('/jobTypes')
 def list_job_types():
     return {
-        'items': [_create_job_type(job_name) for job_name in JOB_PARAMETERS.keys() ],
+        'items': [_create_job_type(job_name) for job_name in JOB_PARAMETERS.keys()],
         'nextToken': None
     }
 
