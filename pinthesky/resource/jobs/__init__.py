@@ -329,7 +329,7 @@ def describe_job_execution(job_id, thing_name, iot):
 @api.route('/jobs/:job_id/executions/:thing_name/cancel', methods=['POST'])
 def cancel_job_execution(job_id, thing_name, iot):
     payload = {}
-    if request.body == "":
+    if request.body != "":
         payload = json.loads(request.body)
     kwargs = {**payload, 'jobId': job_id, 'thingName': thing_name}
     try:

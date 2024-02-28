@@ -229,13 +229,25 @@ def test_job_operations(jobs, groups, cameras):
     }).code == 200
     iot_client.update_job.assert_called_once()
 
+    def cancel_job_execution(jobId, thingName, **kwargs):
+        if thingName == 'farts':
+            raise ClientError({
+                'Error': {
+                    'Code': 'ResourceNotFoundException'
+                }
+            }, 'DescribeJobExecution')
+
+
     iot_client.cancel_job_execution = MagicMock()
+    iot_client.cancel_job_execution.side_effect = cancel_job_execution
     assert jobs(f'/{create.body["jobId"]}/executions/first/cancel', method='POST', body={
         'force': True,
     }).code == 200
-    iot_client.cancel_job_execution.assert_called_once()
+    
+    assert jobs(f'/{create.body["jobId"]}/executions/farts/cancel', method='POST').code == 404
 
     iot_client.delete_job = MagicMock()
+
     jobs(f'/{create.body["jobId"]}', method="DELETE")
     iot_client.delete_job.assert_called_once()
     assert jobs(f'/{create.body["jobId"]}').code == 404
