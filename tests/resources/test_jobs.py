@@ -218,17 +218,22 @@ def test_job_operations(jobs, groups, cameras):
     iot_client.cancel_job = MagicMock()
 
     assert jobs('/farts', method="PUT", body={}).code == 404
-    updated = jobs(f'/{create.body["jobId"]}', method="PUT", body={
-        'status': 'CANCEL',
+    updated = jobs(f'/{create.body["jobId"]}/cancel', method="POST", body={
         'comment': 'This job sucks, killing it'
     })
-    assert updated.body['status'] == 'CANCELLED'
+    assert updated.body['status'] == 'CANCELED'
     iot_client.cancel_job.assert_called_once()
 
     assert jobs(f'/{create.body["jobId"]}', method="PUT", body={
         'description': 'This is an updated job'
     }).code == 200
     iot_client.update_job.assert_called_once()
+
+    iot_client.cancel_job_execution = MagicMock()
+    assert jobs(f'/{create.body["jobId"]}/executions/first/cancel', method='POST', body={
+        'force': True,
+    }).code == 200
+    iot_client.cancel_job_execution.assert_called_once()
 
     iot_client.delete_job = MagicMock()
     jobs(f'/{create.body["jobId"]}', method="DELETE")
