@@ -206,11 +206,11 @@ def test_job_operations(jobs, groups, cameras):
     iot_client.describe_job_execution.side_effect = describe_job_execution
 
     assert jobs(f'/{create.body["jobId"]}/executions/farts').code == 404
-    assert jobs(f'/{create.body["jobId"]}/executions/first').body == {
+    assert jobs(f'/{create.body["jobId"]}/executions/first', query_params={'executionId': 2}).body == {
         'jobId': create.body["jobId"],
         'status': 'FAILED',
         'queuedAt': floor(queued_at.timestamp()),
-        'executionNumber': 1,
+        'executionNumber': 2,
         'thingName': 'first'
     }
 
@@ -235,7 +235,14 @@ def test_job_operations(jobs, groups, cameras):
                 'Error': {
                     'Code': 'ResourceNotFoundException'
                 }
-            }, 'DescribeJobExecution')
+            }, 'CancelJobExecution')
+        if jobId == 'farts':
+            raise ClientError({
+                'Error': {
+                    'Code': 'InternalServerException'
+                }
+            }, 'CancelJobExecution')
+
 
 
     iot_client.cancel_job_execution = MagicMock()
@@ -245,6 +252,7 @@ def test_job_operations(jobs, groups, cameras):
     }).code == 200
     
     assert jobs(f'/{create.body["jobId"]}/executions/farts/cancel', method='POST').code == 404
+    assert jobs(f'/farts/executions/first/cancel', method='POST').code == 500
 
     iot_client.delete_job = MagicMock()
 
