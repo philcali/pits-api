@@ -252,7 +252,11 @@ def test_job_operations(jobs, groups, cameras):
     }).code == 200
     
     assert jobs(f'/{create.body["jobId"]}/executions/farts/cancel', method='POST').code == 404
-    assert jobs(f'/farts/executions/first/cancel', method='POST').code == 500
+    assert jobs('/farts/executions/first/cancel', method='POST').code == 500
+
+    iot_client.delete_job_execution = MagicMock()
+    assert jobs(f'/{create.body["jobId"]}/executions/first/number/1', method='DELETE').code == 204
+    iot_client.delete_job_execution.assert_called_once()
 
     iot_client.delete_job = MagicMock()
 

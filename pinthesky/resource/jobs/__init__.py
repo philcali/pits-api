@@ -326,6 +326,15 @@ def describe_job_execution(job_id, thing_name, iot):
         raise
 
 
+@api.route('/jobs/:job_id/executions/:thing_name/number/:number', methods=['DELETE'])
+def delete_job_execution(job_id, thing_name, number, iot):
+    iot.delete_job_execution(
+        jobId=job_id,
+        thing_name=thing_name,
+        executionNumber=number)
+    response.status_code = 204
+
+
 @api.route('/jobs/:job_id/executions/:thing_name/cancel', methods=['POST'])
 def cancel_job_execution(job_id, thing_name, iot):
     payload = {}
