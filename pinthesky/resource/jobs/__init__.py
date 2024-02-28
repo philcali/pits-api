@@ -26,6 +26,22 @@ def _convert_cloud_to_dto(item):
     return new_item
 
 
+def _upsert_job_definition(job_data, job_id, verify_terminal, thunk):
+    job = job_data.get(request.account_id(), item_id=job_id)
+    if job is None:
+        response.status_code = 404
+        return {
+            'message': f'Job with id {job_id} does not exist.'
+        }
+    payload = json.loads(request.body)
+    kwargs = {**payload, 'jobId': job_id}
+    item = {'jobId': job_id}
+    if verify_terminal:
+        item["status"] = "CANCELED"
+    thunk(**kwargs)
+    return job_data.update(request.account_id(), item=item)
+
+
 JOB_TYPES = {
     'shutdown':
     """
@@ -242,21 +258,20 @@ def describe_job(job_data, job_id, iot):
 
 @api.route('/jobs/:job_id', methods=['PUT'])
 def update_job(job_data, job_id, iot):
-    job = job_data.get(request.account_id(), item_id=job_id)
-    if job is None:
-        response.status_code = 404
-        return {
-            'message': f'Job with id {job_id} does not exist.'
-        }
-    payload = json.loads(request.body)
-    item = {**payload, 'jobId': job_id}
-    kwargs = {'jobId': job_id}
-    if 'status' in payload and payload['status'] == 'CANCEL':
-        iot.cancel_job(**kwargs)
-        item['status'] = 'CANCELLED'
-    else:
-        iot.update_job(**kwargs)
-    return job_data.update(request.account_id(), item=item)
+    return _upsert_job_definition(
+        job_data=job_data,
+        job_id=job_id,
+        verify_terminal=False,
+        thunk=iot.update_job)
+
+
+@api.route('/jobs/:job_id/cancel', methods=['POST'])
+def cancel_job(job_data, job_id, iot):
+    return _upsert_job_definition(
+        job_data=job_data,
+        job_id=job_id,
+        verify_terminal=True,
+        thunk=iot.cancel_job)
 
 
 @api.route('/jobs/:job_id', methods=['DELETE'])
@@ -292,7 +307,7 @@ def list_job_executions(job_data, job_id, iot):
 
 
 @api.route('/jobs/:job_id/executions/:thing_name')
-def describe_job_execution(job_id, iot, thing_name):
+def describe_job_execution(job_id, thing_name, iot):
     kwargs = {'jobId': job_id, 'thingName': thing_name}
     if 'executionId' in request.queryparams:
         kwargs['executionNumber'] = request.queryparams['executionId']
@@ -302,6 +317,23 @@ def describe_job_execution(job_id, iot, thing_name):
             **_convert_cloud_to_dto(execution['execution']),
             'thingName': thing_name
         }
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            response.status_code = 404
+            return {
+                'message': f'Job {job_id} does not exist for {thing_name}'
+            }
+        raise
+
+
+@api.route('/jobs/:job_id/executions/:thing_name/cancel', methods=['POST'])
+def cancel_job_execution(job_id, thing_name, iot):
+    payload = {}
+    if request.body != "":
+        payload = json.loads(request.body)
+    kwargs = {**payload, 'jobId': job_id, 'thingName': thing_name}
+    try:
+        iot.cancel_job_execution(**kwargs)
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             response.status_code = 404

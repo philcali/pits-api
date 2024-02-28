@@ -206,11 +206,11 @@ def test_job_operations(jobs, groups, cameras):
     iot_client.describe_job_execution.side_effect = describe_job_execution
 
     assert jobs(f'/{create.body["jobId"]}/executions/farts').code == 404
-    assert jobs(f'/{create.body["jobId"]}/executions/first').body == {
+    assert jobs(f'/{create.body["jobId"]}/executions/first', query_params={'executionId': 2}).body == {
         'jobId': create.body["jobId"],
         'status': 'FAILED',
         'queuedAt': floor(queued_at.timestamp()),
-        'executionNumber': 1,
+        'executionNumber': 2,
         'thingName': 'first'
     }
 
@@ -218,11 +218,10 @@ def test_job_operations(jobs, groups, cameras):
     iot_client.cancel_job = MagicMock()
 
     assert jobs('/farts', method="PUT", body={}).code == 404
-    updated = jobs(f'/{create.body["jobId"]}', method="PUT", body={
-        'status': 'CANCEL',
+    updated = jobs(f'/{create.body["jobId"]}/cancel', method="POST", body={
         'comment': 'This job sucks, killing it'
     })
-    assert updated.body['status'] == 'CANCELLED'
+    assert updated.body['status'] == 'CANCELED'
     iot_client.cancel_job.assert_called_once()
 
     assert jobs(f'/{create.body["jobId"]}', method="PUT", body={
@@ -230,7 +229,33 @@ def test_job_operations(jobs, groups, cameras):
     }).code == 200
     iot_client.update_job.assert_called_once()
 
+    def cancel_job_execution(jobId, thingName, **kwargs):
+        if thingName == 'farts':
+            raise ClientError({
+                'Error': {
+                    'Code': 'ResourceNotFoundException'
+                }
+            }, 'CancelJobExecution')
+        if jobId == 'farts':
+            raise ClientError({
+                'Error': {
+                    'Code': 'InternalServerException'
+                }
+            }, 'CancelJobExecution')
+
+
+
+    iot_client.cancel_job_execution = MagicMock()
+    iot_client.cancel_job_execution.side_effect = cancel_job_execution
+    assert jobs(f'/{create.body["jobId"]}/executions/first/cancel', method='POST', body={
+        'force': True,
+    }).code == 200
+    
+    assert jobs(f'/{create.body["jobId"]}/executions/farts/cancel', method='POST').code == 404
+    assert jobs(f'/farts/executions/first/cancel', method='POST').code == 500
+
     iot_client.delete_job = MagicMock()
+
     jobs(f'/{create.body["jobId"]}', method="DELETE")
     iot_client.delete_job.assert_called_once()
     assert jobs(f'/{create.body["jobId"]}').code == 404
