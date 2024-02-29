@@ -26,7 +26,7 @@ def _convert_cloud_to_dto(item):
     return new_item
 
 
-def _upsert_job_definition(job_data, job_id, verify_terminal, thunk):
+def _upsert_job_definition(job_data, job_id, verify_terminal, thunk, strip_fields=[]):
     job = job_data.get(request.account_id(), item_id=job_id)
     if job is None:
         response.status_code = 404
@@ -35,6 +35,9 @@ def _upsert_job_definition(job_data, job_id, verify_terminal, thunk):
         }
     payload = json.loads(request.body)
     kwargs = {**payload, 'jobId': job_id}
+    for field in strip_fields:
+        if field in kwargs:
+            del kwargs[field]
     item = {'jobId': job_id}
     if verify_terminal:
         item["status"] = "CANCELED"
@@ -262,6 +265,13 @@ def update_job(job_data, job_id, iot):
         job_data=job_data,
         job_id=job_id,
         verify_terminal=False,
+        strip_fields=[
+            'createTime',
+            'updateTime',
+            'parameters',
+            'type',
+            'status',
+        ],
         thunk=iot.update_job)
 
 
