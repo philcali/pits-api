@@ -16,7 +16,7 @@ class Router:
         self.filters = []
 
     def __call__(self, event, context):
-        logger.info(f'Incoming event {event}')
+        logger.debug(f'Incoming event {event}')
         ctx = copy_context()
         self.__prepare_context(ctx, event, context)
         for filter in self.filters:
@@ -30,7 +30,7 @@ class Router:
                 raw_path = event['requestContext']['http']['path']
                 match = re.search(pattern, raw_path)
                 if pattern == raw_path or match is not None:
-                    logger.debug(f'Found {raw_path} for {pattern}')
+                    logger.info(f'Found {route.__module__}.{route.__name__}')
                     output = self.__dispatch_request(
                         ctx, route, list(match.groups()))
                     return self.__dispatch_response(ctx, output)
