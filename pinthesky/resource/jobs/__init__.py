@@ -326,6 +326,14 @@ def describe_job_execution(job_id, thing_name, iot):
         raise
 
 
+@api.route('/jobs/:job_id/executions/:thing_name/number/:number', methods=['DELETE'])
+def delete_job_execution(job_id, thing_name, number, iot):
+    iot.delete_job_execution(
+        jobId=job_id,
+        thing_name=thing_name,
+        executionNumber=number)
+
+
 @api.route('/jobs/:job_id/executions/:thing_name/cancel', methods=['POST'])
 def cancel_job_execution(job_id, thing_name, iot):
     payload = {}
@@ -334,6 +342,10 @@ def cancel_job_execution(job_id, thing_name, iot):
     kwargs = {**payload, 'jobId': job_id, 'thingName': thing_name}
     try:
         iot.cancel_job_execution(**kwargs)
+        return {
+            'thingName': thing_name,
+            'jobId': job_id,
+        }
     except ClientError as e:
         if e.response['Error']['Code'] == 'ResourceNotFoundException':
             response.status_code = 404

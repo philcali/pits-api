@@ -23,7 +23,7 @@ class Router:
             kwargs = self.__fill_globals(filter)
             output = ctx.run(filter, **kwargs)
             if self.__is_aborted(ctx):
-                return self.__dispatch_response(ctx, output)
+                return self.__dispatch_response(ctx, output, aborted=True)
         for rule, route in self.routes.items():
             method, pattern = rule.split(':', 1)
             if method == event['requestContext']['http']['method']:
@@ -36,11 +36,11 @@ class Router:
                     return self.__dispatch_response(ctx, output)
         return {
             'statusCode': 404,
-            'headers': {'content-type': 'text/plain'},
+            'headers': {'content-type': 'application/json'},
             'body': '{"message": "Resource not found"}'
         }
 
-    def __dispatch_response(self, ctx, output):
+    def __dispatch_response(self, ctx, output, aborted=False):
         def format_output(real_out):
             if isinstance(real_out, dict):
                 real_out = json.dumps(real_out)
@@ -51,6 +51,8 @@ class Router:
                     response.headers['content-type'] = 'text/plain'
             b = real_out if real_out is not None else response.body
             response.headers['content-length'] = 0 if b is None else len(b)
+            if not aborted and b is None and response.status_code == 200:
+                response.status_code = 204
             return {
                 'statusCode': response.status_code,
                 'body': b,

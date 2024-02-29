@@ -88,7 +88,7 @@ def test_subscription_workflow(subscriptions, created_subs):
     assert subscriptions('/farts', method="PUT", body=sub).code == 404
 
     # delete
-    assert subscriptions(f'/{sub["id"]}', method="DELETE").code == 200
+    assert subscriptions(f'/{sub["id"]}', method="DELETE").code == 204
 
     # induced failure
     created_failure = subscriptions(method="POST", body={
