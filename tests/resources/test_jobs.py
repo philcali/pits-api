@@ -29,7 +29,7 @@ def test_job_operations(jobs, groups, cameras):
     assert groups(method="POST", body={'name': 'Home'}).code == 200
     assert groups('/Home/cameras', method="POST", body={
         'cameras': ['first', 'second']
-    }).code == 200
+    }).code == 204
 
     tracking = {}
 

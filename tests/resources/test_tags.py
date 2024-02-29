@@ -48,13 +48,13 @@ def test_tag_crud_workflow(tags, videos):
     assert tags('/Favorites/videos', method="POST", body={}).code == 401
     assert tags('/Favorites/videos', method="POST", body={
         'videos': [video]
-    }).code == 200
+    }).code == 204
     assert videos(
         f'/{video["motionVideo"]}/cameras/PitsCamera1'
     ).body == video
     assert videos(
         f'/{video["motionVideo"]}/cameras/PitsCamera1',
-        method="DELETE").code == 200
+        method="DELETE").code == 204
     assert videos(
         f'/{video["motionVideo"]}/cameras/PitsCamera1'
     ).code == 404
@@ -71,14 +71,14 @@ def test_tag_crud_workflow(tags, videos):
         })
     assert tags('/Favorites/videos', method="POST", body={
         'videos': [video]
-    }).code == 200
+    }).code == 204
 
     video['id'] = hashed_video(video['motionVideo'], 'PitsCamera1')
     assert tags('/Favorites/videos').body['items'][0] == video
-    assert tags(f'/Favorites/videos/{title}', method="DELETE").code == 200
+    assert tags(f'/Favorites/videos/{title}', method="DELETE").code == 204
 
     assert tags('/Favorites/videos', method="POST", body={
         'videos': [video]
-    }).code == 200
+    }).code == 204
 
-    assert tags('/Favorites', method="DELETE").code == 200
+    assert tags('/Favorites', method="DELETE").code == 204

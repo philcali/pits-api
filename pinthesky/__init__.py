@@ -21,5 +21,7 @@ class NullHandler(logging.Handler):
 
 
 logging.getLogger('pinthesky').addHandler(NullHandler())
+# TODO: set the level from the ENV
+set_stream_logger('pinthesky')
 
 api = Router()
