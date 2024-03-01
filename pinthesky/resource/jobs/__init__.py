@@ -340,7 +340,8 @@ def describe_job_execution(job_id, thing_name, iot):
 def delete_job_execution(job_id, thing_name, number, iot):
     iot.delete_job_execution(
         jobId=job_id,
-        thing_name=thing_name,
+        thingName=thing_name,
+        force=True,
         executionNumber=int(number))
 
 
