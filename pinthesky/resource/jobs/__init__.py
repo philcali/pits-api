@@ -320,7 +320,7 @@ def list_job_executions(job_data, job_id, iot):
 def describe_job_execution(job_id, thing_name, iot):
     kwargs = {'jobId': job_id, 'thingName': thing_name}
     if 'executionId' in request.queryparams:
-        kwargs['executionNumber'] = request.queryparams['executionId']
+        kwargs['executionNumber'] = int(request.queryparams['executionId'])
     try:
         execution = iot.describe_job_execution(**kwargs)
         return {
@@ -341,7 +341,7 @@ def delete_job_execution(job_id, thing_name, number, iot):
     iot.delete_job_execution(
         jobId=job_id,
         thing_name=thing_name,
-        executionNumber=number)
+        executionNumber=int(number))
 
 
 @api.route('/jobs/:job_id/executions/:thing_name/cancel', methods=['POST'])

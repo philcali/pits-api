@@ -89,7 +89,7 @@ class Router:
                 e,
                 value=e,
                 tb=e.__traceback__))
-            logger.error(f"Failed to run {route}:\n{trace}")
+            logger.error(f"Failed to run {route.__name__}:\n{trace}")
             self.__fail(ctx)
             return {
                 'message': 'Internal server error'
