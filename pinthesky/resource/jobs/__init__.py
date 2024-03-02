@@ -178,10 +178,15 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
 
     def thing_arn(thing_name):
         return f'{arn_prefix}/{thing_name}'
+
+    default_description = f'A {payload["type"]} job'
+    description = payload.get('description', default_description)
+    if description == '':
+        description = default_description
     kwargs = {
         'jobId': job_id,
         'targets': list(map(thing_arn, payload.get('cameras', []))),
-        'description': payload.get('description', f'A {payload["type"]} job')
+        'description': description,
     }
     for group in payload.get('groups', []):
         truncated = True
