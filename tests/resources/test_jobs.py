@@ -59,7 +59,7 @@ def test_job_operations(jobs, groups, cameras):
     sleep(1)
     create_up = jobs(
         method="POST",
-        body={'type': 'update', 'cameras': ['first', 'second']}
+        body={'type': 'update', 'description': '', 'cameras': ['first', 'second']}
     )
     assert create.code == 200
     assert create_up.code == 200
