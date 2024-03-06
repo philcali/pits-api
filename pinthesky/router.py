@@ -1,4 +1,5 @@
 from contextvars import copy_context
+from decimal import Decimal
 import traceback
 from pinthesky.globals import request, response, app_context
 import inspect
@@ -8,6 +9,13 @@ import re
 
 
 logger = logging.getLogger(__name__)
+
+
+class RouterEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return f'{o.normalize():f}'
+        return super().default(o)
 
 
 class Router:
@@ -43,7 +51,7 @@ class Router:
     def __dispatch_response(self, ctx, output, aborted=False):
         def format_output(real_out):
             if isinstance(real_out, dict):
-                real_out = json.dumps(real_out)
+                real_out = json.dumps(real_out, cls=RouterEncoder)
                 if 'content-type' not in response.headers:
                     response.headers['content-type'] = 'application/json'
             elif isinstance(real_out, str):

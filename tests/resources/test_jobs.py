@@ -61,8 +61,13 @@ def test_job_operations(jobs, groups, cameras):
         method="POST",
         body={'type': 'update', 'description': '', 'cameras': ['first', 'second']}
     )
+    create_logs = jobs(
+        method="POST",
+        body={'type': 'service-logs', 'description': '', 'cameras': ['first', 'second'], 'parameters': {'lines': 20, 'service': 'pinthesky', 'user': 'root'}}
+    )
     assert create.code == 200
     assert create_up.code == 200
+    assert create_logs.code == 200
     assert create.body['jobId'] in tracking
     reboot_template = Template(JOB_TYPES['reboot'])
     reboot_doc = reboot_template.safe_substitute(user='root')
@@ -129,12 +134,12 @@ def test_job_operations(jobs, groups, cameras):
         ]
     }
 
-    assert jobs().body['items'][1] == create.body
+    assert jobs().body['items'][2] == create.body
 
     assert jobs('/farts').code == 404
 
-    assert cameras('/first/jobs').body['items'][1] == create.body
-    assert cameras('/second/jobs').body['items'][1] == create.body
+    assert cameras('/first/jobs').body['items'][2] == create.body
+    assert cameras('/second/jobs').body['items'][2] == create.body
 
     assert jobs('/farts/executions').code == 404
 
