@@ -66,6 +66,33 @@ JOB_TYPES = {
     ]
 }
     """,
+    'service-logs':
+    """
+{
+    "_comment": "Pulls service daemon logs from Pi In The Sky Camera hardware",
+    "version": "1.0",
+    "steps": [
+        {
+            "action": {
+                "name": "Read Service Logs",
+                "type": "runHandler",
+                "input": {
+                    "handler": "read-service-logs.sh",
+                    "args": [
+                        "$service",
+                        "$lines",
+                        "$pattern",
+                        "$since",
+                        "$until"
+                    ],
+                    "path": "default"
+                },
+                "runAsUser": "$user"
+            }
+        }
+    ]
+}
+    """,
     'reboot':
     """
 {

@@ -6,6 +6,14 @@ JOB_PARAMETERS = {
     'shutdown': [
         'user'
     ],
+    'service-logs': [
+        'user',
+        'service',
+        'lines',
+        'pattern',
+        'since',
+        'until'
+    ],
     'reboot': [
         'user'
     ],
