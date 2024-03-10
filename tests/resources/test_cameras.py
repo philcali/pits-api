@@ -1,3 +1,9 @@
+import json
+from unittest.mock import MagicMock
+from pinthesky.globals import app_context
+from botocore.client import ClientError
+from io import StringIO
+
 
 def test_camera_crud_workflow(cameras):
     # List, confirm empty
@@ -84,6 +90,105 @@ def test_camera_crud_workflow(cameras):
             "durationInSeconds": 20
         }
     ).code == 200
+
+    iot_data = MagicMock()
+    app_context.inject('iot_data', iot_data, force=True)
+
+    def get_thing_shadow(thingName, shadowName):
+        if thingName == 'PitsCamera2':
+            raise ClientError(error_response={
+                'Code': 'ResourceNotFoundException'
+            }, operation_name='get_thing_shadow')
+        return {
+            'payload': StringIO(initial_value=json.dumps({
+                'state': {
+                    'reported': {
+                        'camera': {
+                            'camera_field1': 1,
+                            'camera_field2': 2
+                        },
+                        'cloudwatch': {
+                            'enabled': True
+                        }
+                    }
+                }
+            }))
+        }
+
+    iot_data.get_thing_shadow.side_effect = get_thing_shadow
+
+    configuration = cameras(f'/{cam1["thingName"]}/configuration')
+    assert configuration.code == 200
+    assert configuration.body == {
+        'camera_field1': 1,
+        'camera_field2': 2
+    }
+    configuration = cameras(
+        f'/{cam1["thingName"]}/configuration',
+        query_params={'document': 'camera,cloudwatch'})
+    assert configuration.code == 200
+    assert configuration.body == {
+        'camera': {
+            'camera_field1': 1,
+            'camera_field2': 2
+        },
+        'cloudwatch': {
+            'enabled': True
+        }
+    }
+    assert cameras('/PitsCamera2/configuration').code == 404
+
+    def update_thing_shadow(thingName, shadowName, payload):
+        if thingName == 'PitsCamera2':
+            raise ClientError(error_response={
+                'Code': 'ResourceNotFoundException'
+            }, operation_name='get_thing_shadow')
+        assert shadowName == 'pinthesky'
+        return {
+            'payload': StringIO(initial_value=payload.decode('utf-8'))
+        }
+
+    iot_data.update_thing_shadow.side_effect = update_thing_shadow
+
+    configuration = cameras(
+        f'/{cam1["thingName"]}/configuration',
+        method='POST',
+        body={
+            'camera_field1': 1,
+            'camera_field2': 2
+        })
+    assert configuration.code == 200
+    assert configuration.body == {
+        'camera_field1': 1,
+        'camera_field2': 2
+    }
+
+    configuration = cameras(
+        f'/{cam1["thingName"]}/configuration',
+        method='POST',
+        body={
+            'camera': {
+                'camera_field1': 1,
+                'camera_field2': 2
+            },
+            'cloudwatch': {
+                'enabled': True
+            }
+        })
+    assert configuration.code == 200
+    assert configuration.body == {
+        'camera': {
+            'camera_field1': 1,
+            'camera_field2': 2
+        },
+        'cloudwatch': {
+            'enabled': True
+        }
+    }
+
+    assert cameras('/PitsCamera2/configuration', method='POST', body={
+        'farts': True
+    }).code == 404
 
     # Send a health request
     assert cameras(

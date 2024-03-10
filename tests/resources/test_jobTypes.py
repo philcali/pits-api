@@ -1,5 +1,6 @@
 import json
 
+
 def test_job_type_operations(jobTypes):
     from pinthesky.resource.jobs import JOB_TYPES
 
@@ -25,6 +26,5 @@ def test_job_type_operations(jobTypes):
             'version': job['version'],
             'parameters': parameters
         }
-
 
     assert jobTypes('/farts').code == 404

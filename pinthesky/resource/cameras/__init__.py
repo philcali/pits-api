@@ -181,7 +181,15 @@ def get_camera_configuration(iot_data, thing_name):
             thingName=thing_name,
             shadowName="pinthesky")
         payload = json.loads(thing_resp['payload'].read())
-        return payload['state']['reported']['camera']
+        document_param = request.queryparams.get('document', None)
+        if document_param is None:
+            return payload['state']['reported']['camera']
+        documents = re.split('\\s*,\\s*', document_param)
+        rval = {}
+        for document in documents:
+            if document in payload['state']['reported']:
+                rval[document] = payload['state']['reported'][document]
+        return rval
     except ClientError as e:
         if e.response['Code'] == 'ResourceNotFoundException':
             response.status_code = 404
@@ -198,16 +206,31 @@ def update_camera_configuration(iot_data, thing_name):
         payload = {
             'state': {
                 'desired': {
-                    'camera': configuration
                 }
             }
         }
+        # In order to be backwards compatible, if the payload
+        # received does not contain a "camera" field, then we
+        # assume that the configuration only applies to the camera
+        # document. Otherwise we will update any subdocument
+        # that targets the thing.
+        keys = []
+        if 'camera' not in configuration:
+            payload['state']['desired']['camera'] = configuration
+        else:
+            keys = list(configuration.keys())
+            payload['state']['desired'].update(configuration)
         thing_resp = iot_data.update_thing_shadow(
             thingName=thing_name,
             shadowName="pinthesky",
             payload=bytes(json.dumps(payload), encoding="utf8"))
-        rval = json.loads(thing_resp['payload'].read())
-        return rval['state']['desired']['camera']
+        r_payload = json.loads(thing_resp['payload'].read())
+        if len(keys) == 0:
+            return r_payload['state']['desired']['camera']
+        rval = {}
+        for key in keys:
+            rval[key] = r_payload['state']['desired'][key]
+        return rval
     except ClientError as e:
         if e.response['Code'] == 'ResourceNotFoundException':
             response.status_code = 404
