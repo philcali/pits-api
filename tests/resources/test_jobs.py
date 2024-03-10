@@ -255,7 +255,7 @@ def test_job_operations(jobs, groups, cameras):
     assert jobs(f'/{create.body["jobId"]}/executions/first/cancel', method='POST', body={
         'force': True,
     }).code == 200
-    
+
     assert jobs(f'/{create.body["jobId"]}/executions/farts/cancel', method='POST').code == 404
     assert jobs('/farts/executions/first/cancel', method='POST').code == 500
 
