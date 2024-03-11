@@ -9,7 +9,6 @@ DATA_ENDPOINT = f'https://{os.getenv("DATA_ENDPOINT")}'
 
 
 app_context.inject('iot', boto3.client('iot'))
-app_context.inject('s3', boto3.client('s3'))
 app_context.inject(
     name='iot_data',
     value=boto3.client('iot-data', endpoint_url=DATA_ENDPOINT))

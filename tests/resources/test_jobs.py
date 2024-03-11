@@ -248,8 +248,6 @@ def test_job_operations(jobs, groups, cameras):
                 }
             }, 'CancelJobExecution')
 
-
-
     iot_client.cancel_job_execution = MagicMock()
     iot_client.cancel_job_execution.side_effect = cancel_job_execution
     assert jobs(f'/{create.body["jobId"]}/executions/first/cancel', method='POST', body={

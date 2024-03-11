@@ -70,6 +70,13 @@ def iot():
 
 
 @pytest.fixture(scope="module")
+def storage():
+    from pinthesky.resource import storage
+
+    return Resources(storage)
+
+
+@pytest.fixture(scope="module")
 def cameras(table):
     assert table.name == 'Pits'
     from pinthesky.resource import cameras
