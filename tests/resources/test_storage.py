@@ -7,4 +7,5 @@ def test_storage(storage):
         'bucketName': 'NOT_FOUND',
         'videoPrefix': 'videos',
         'imagePrefix': 'images',
+        'deviceVideoPrefix': 'devices',
     }
