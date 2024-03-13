@@ -134,6 +134,20 @@ def test_camera_crud_workflow(cameras):
     }
     configuration = cameras(
         f'/{cam1["thingName"]}/configuration',
+        query_params={'state': 'reported,desired,creed'})
+    assert configuration.code == 200
+    assert configuration.body == {
+        'reported': {
+            'camera_field1': 1,
+            'camera_field2': 2
+        },
+        'desired': {
+            'camera_field1': 2,
+            'camera_field2': 2
+        }
+    }
+    configuration = cameras(
+        f'/{cam1["thingName"]}/configuration',
         query_params={'document': 'camera,cloudwatch'})
     assert configuration.code == 200
     assert configuration.body == {
