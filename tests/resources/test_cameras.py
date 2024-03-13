@@ -110,6 +110,15 @@ def test_camera_crud_workflow(cameras):
                         'cloudwatch': {
                             'enabled': True
                         }
+                    },
+                    'desired': {
+                        'camera': {
+                            'camera_field1': 2,
+                            'camera_field2': 2
+                        },
+                        'cloudwatch': {
+                            'enabled': False
+                        },
                     }
                 }
             }))
@@ -134,6 +143,33 @@ def test_camera_crud_workflow(cameras):
         },
         'cloudwatch': {
             'enabled': True
+        }
+    }
+    configuration = cameras(
+        f'/{cam1["thingName"]}/configuration',
+        query_params={
+            'document': 'camera,cloudwatch',
+            'state': 'desired,reported,creed',
+        })
+    assert configuration.code == 200
+    assert configuration.body == {
+        'desired': {
+            'camera': {
+                'camera_field1': 2,
+                'camera_field2': 2
+            },
+            'cloudwatch': {
+                'enabled': False
+            }
+        },
+        'reported': {
+            'camera': {
+                'camera_field1': 1,
+                'camera_field2': 2
+            },
+            'cloudwatch': {
+                'enabled': True
+            }
         }
     }
     assert cameras('/PitsCamera2/configuration').code == 404
