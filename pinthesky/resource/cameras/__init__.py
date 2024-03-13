@@ -181,14 +181,31 @@ def get_camera_configuration(iot_data, thing_name):
             thingName=thing_name,
             shadowName="pinthesky")
         payload = json.loads(thing_resp['payload'].read())
+        state_param = request.queryparams.get('state', None)
         document_param = request.queryparams.get('document', None)
         if document_param is None:
-            return payload['state']['reported']['camera']
+            if state_param is None:
+                return payload['state']['reported']['camera']
+            else:
+                rval = {}
+                for state in re.split('\\s*,\\s*', state_param):
+                    if state in payload['state']:
+                        rval[state] = payload['state'][state]['camera']
+                return rval
         documents = re.split('\\s*,\\s*', document_param)
         rval = {}
-        for document in documents:
-            if document in payload['state']['reported']:
-                rval[document] = payload['state']['reported'][document]
+        if state_param is None:
+            for document in documents:
+                if document in payload['state']['reported']:
+                    rval[document] = payload['state']['reported'][document]
+        else:
+            for state in re.split('\\s*,\\s*', state_param):
+                if state not in payload['state']:
+                    continue
+                rval[state] = {}
+                for document in documents:
+                    if document in payload['state'][state]:
+                        rval[state][document] = payload['state'][state][document]
         return rval
     except ClientError as e:
         if e.response['Code'] == 'ResourceNotFoundException':
