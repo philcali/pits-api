@@ -2,8 +2,8 @@ from pinthesky.conversion import sort_filters_for
 from pinthesky.database import MAX_ITEMS, QueryParams
 
 
-def get_limit(request):
-    limit = int(request.queryparams.get('limit', MAX_ITEMS))
+def get_limit(request, default_max=MAX_ITEMS):
+    limit = int(request.queryparams.get('limit', default_max))
     return min(MAX_ITEMS, max(1, limit))
 
 

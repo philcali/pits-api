@@ -317,3 +317,10 @@ class DeviceToJobs(Repository):
         super().__init__(table=table, type="DeviceToJobs", fields_to_keys={
             'jobId': 'SK'
         })
+
+
+class Versions(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="Versions", fields_to_keys={
+            'name': 'SK'
+        })
