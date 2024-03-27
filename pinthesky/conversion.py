@@ -1,8 +1,7 @@
 import hashlib
 import dateutil.parser
 from math import floor
-
-from pinthesky.database import SortFilter
+from ophis.database import SortFilter
 
 
 def isoformat_to_timestamp(date_string):

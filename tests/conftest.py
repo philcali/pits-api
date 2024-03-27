@@ -1,5 +1,5 @@
 from collections import namedtuple
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 import pytest
 import boto3
 import subprocess

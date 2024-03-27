@@ -1,5 +1,5 @@
 from pinthesky import api, set_stream_logger
-from pinthesky.globals import request, response
+from ophis.globals import request, response
 from pinthesky.resource import inject, iot, cameras, groups, jobs, jobTypes, subscriptions, videos, tags, stats, storage, versions
 
 

@@ -1,8 +1,8 @@
 import json
+from ophis.database import ConflictException, NotFoundException, QueryParams, Repository
+from ophis.globals import app_context, request, response
 from pinthesky.conversion import hashed_video
-from pinthesky.database import QueryParams, Repository, Tags, TagsToVideos, VideosToTags
-from pinthesky.exception import ConflictException, NotFoundException
-from pinthesky.globals import app_context, request, response
+from pinthesky.database import Tags, TagsToVideos, VideosToTags
 from pinthesky.resource import api
 from pinthesky.resource.helpers import create_query_params
 

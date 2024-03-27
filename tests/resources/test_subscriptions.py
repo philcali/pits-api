@@ -1,7 +1,7 @@
 from botocore.exceptions import ClientError
 from collections import namedtuple
 from uuid import uuid4
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 from unittest.mock import MagicMock
 import pytest
 

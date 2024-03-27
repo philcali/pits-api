@@ -1,4 +1,4 @@
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 
 
 def test_versions(versions):

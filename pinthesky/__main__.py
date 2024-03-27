@@ -10,7 +10,7 @@ from collections import namedtuple
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pinthesky import set_stream_logger
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 from uuid import uuid4
 
 

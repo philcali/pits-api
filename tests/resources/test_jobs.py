@@ -5,9 +5,8 @@ from datetime import datetime
 from string import Template
 from time import sleep
 from unittest.mock import MagicMock
-from pinthesky.database import MAX_ITEMS
-
-from pinthesky.globals import app_context
+from ophis.database import MAX_ITEMS
+from ophis.globals import app_context
 
 
 def test_job_operations(jobs, groups, cameras):

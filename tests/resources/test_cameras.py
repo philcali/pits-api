@@ -1,6 +1,6 @@
 import json
 from unittest.mock import MagicMock
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 from botocore.client import ClientError
 from io import StringIO
 

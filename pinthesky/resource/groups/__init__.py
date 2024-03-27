@@ -1,9 +1,9 @@
 import json
 import re
 from pinthesky import api
-from pinthesky.database import Groups, GroupsToCameras, QueryParams, Repository
-from pinthesky.exception import ConflictException
-from pinthesky.globals import app_context, request, response
+from pinthesky.database import Groups, GroupsToCameras 
+from ophis.database import ConflictException, QueryParams, Repository
+from ophis.globals import app_context, request, response
 from pinthesky.resource.helpers import create_query_params, get_limit
 
 
