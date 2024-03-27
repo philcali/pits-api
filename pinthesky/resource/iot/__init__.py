@@ -1,7 +1,7 @@
 import boto3
 import os
 from pinthesky import api
-from pinthesky.globals import app_context, request
+from ophis.globals import app_context, request
 from pinthesky.resource.helpers import get_limit
 
 

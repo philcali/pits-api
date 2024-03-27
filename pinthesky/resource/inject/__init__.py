@@ -1,6 +1,6 @@
 import boto3
 import os
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 
 TABLE_NAME = os.getenv('TABLE_NAME', 'Pits')
 

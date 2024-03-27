@@ -1,5 +1,6 @@
 import json
-from pinthesky.resource import api, response
+from pinthesky.resource import api
+from ophis.globals import response
 from pinthesky.resource.jobs import JOB_TYPES
 
 JOB_PARAMETERS = {

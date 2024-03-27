@@ -1,7 +1,7 @@
 from math import floor
 from time import time
 from pinthesky.conversion import hashed_video
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 
 
 def test_tag_crud_workflow(tags, videos):

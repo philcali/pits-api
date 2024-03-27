@@ -1,7 +1,7 @@
 import boto3
 
+from ophis.globals import app_context
 from pinthesky import api
-from pinthesky.globals import app_context
 
 
 app_context.inject('s3', boto3.client('s3'))

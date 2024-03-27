@@ -1,6 +1,6 @@
 from math import floor
 from time import time
-from pinthesky.globals import app_context
+from ophis.globals import app_context
 
 
 def test_stats_workflow(stats, cameras):

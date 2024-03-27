@@ -1,6 +1,6 @@
+from ophis.globals import app_context, request, response
 from pinthesky.database import Versions
 from pinthesky.resource import api
-from pinthesky.globals import app_context, request, response
 from pinthesky.resource.helpers import create_query_params
 
 app_context.inject('version_data', Versions())

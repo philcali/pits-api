@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
-from pinthesky.database import MAX_ITEMS
-from pinthesky.globals import app_context
+from ophis.database import MAX_ITEMS
+from ophis.globals import app_context
 
 
 def test_iot_operations(iot):
