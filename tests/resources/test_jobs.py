@@ -62,7 +62,18 @@ def test_job_operations(jobs, groups, cameras):
     )
     create_logs = jobs(
         method="POST",
-        body={'type': 'service-logs', 'description': '', 'cameras': ['first', 'second'], 'parameters': {'lines': 20, 'service': 'pinthesky', 'user': 'root'}}
+        body={
+            'type': 'service-logs',
+            'description': '',
+            'cameras': ['first', 'second'],
+            'parameters': {
+                'lines': 20,
+                'service': 'pinthesky',
+                'user': 'root',
+                'farts': None,
+                'other': ''
+            }
+        }
     )
     assert create.code == 200
     assert create_up.code == 200
