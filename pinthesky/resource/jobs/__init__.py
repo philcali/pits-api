@@ -234,7 +234,7 @@ def create_job(iot, job_data, group_camera_data, camera_job_data):
             'message': 'Need to supply a camera or group of cameras.'
         }
     template = Template(JOB_TYPES[payload['type']])
-    parameters = payload.get('parameters', {'user': 'root'})
+    parameters = dict((key, value) for key, value in payload.get('parameters', {'user': 'root'}).items() if value is not None or value != '')
     kwargs['document'] = template.safe_substitute(**parameters)
     kwargs['jobExecutionsRetryConfig'] = payload.get('retryConfig', {
         'criteriaList': [
