@@ -10,13 +10,13 @@ def test_tokens(tokens):
 
     assert list_resp.code == 200
 
-    not_found = tokens(f'/not-found')
+    not_found = tokens('/not-found')
     assert not_found.code == 404
     assert not_found.body == {
         'message': 'Token with id not-found was not found'
     }
 
-    create= tokens(method="POST", body={
+    create = tokens(method="POST", body={
         'timeoutInSeconds': 10
     })
 

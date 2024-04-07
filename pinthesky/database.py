@@ -1,5 +1,4 @@
 from ophis.database import Repository
-from ophis.token import EncryptedTokenMarshaller
 
 
 class Groups(Repository):
