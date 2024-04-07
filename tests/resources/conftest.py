@@ -85,6 +85,14 @@ def versions(table):
 
 
 @pytest.fixture(scope="module")
+def tokens(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import tokens
+
+    return Resources(tokens)
+
+
+@pytest.fixture(scope="module")
 def cameras(table):
     assert table.name == 'Pits'
     from pinthesky.resource import cameras

@@ -5,7 +5,7 @@ from string import Template
 from time import time
 from uuid import uuid4
 from botocore.exceptions import ClientError
-from pinthesky.database import DeviceJobs, DeviceToJobs 
+from pinthesky.database import DeviceJobs, DeviceToJobs
 from ophis.database import QueryParams, Repository
 from ophis.globals import app_context, request, response
 from pinthesky.resource import api

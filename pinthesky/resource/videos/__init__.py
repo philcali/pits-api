@@ -3,7 +3,7 @@ from ophis.database import QueryParams, Repository
 from ophis.globals import app_context, request, response
 from pinthesky import api
 from pinthesky.conversion import hashed_video
-from pinthesky.database import MotionVideos 
+from pinthesky.database import MotionVideos
 from pinthesky.resource.helpers import create_query_params
 from pinthesky.s3 import generate_presigned_url
 
