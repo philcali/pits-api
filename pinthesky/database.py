@@ -1,4 +1,5 @@
 from ophis.database import Repository
+from ophis.token import EncryptedTokenMarshaller
 
 
 class Groups(Repository):
@@ -91,4 +92,11 @@ class Versions(Repository):
     def __init__(self, table=None) -> None:
         super().__init__(table=table, type="Versions", fields_to_keys={
             'name': 'SK'
+        })
+
+
+class DataTokens(Repository):
+    def __init__(self, table=None) -> None:
+        super().__init__(table=table, type="DataTokens", fields_to_keys={
+            'id': 'SK'
         })
