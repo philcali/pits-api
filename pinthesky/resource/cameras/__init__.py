@@ -4,7 +4,7 @@ from uuid import uuid4
 from botocore.exceptions import ClientError
 from pinthesky import api
 from pinthesky.conversion import timestamp_to_motion
-from pinthesky.database import Cameras, CamerasToGroups 
+from pinthesky.database import Cameras, CamerasToGroups
 from ophis.database import ConflictException, Repository, QueryParams
 from ophis.globals import app_context, request, response
 from pinthesky.resource.helpers import create_query_params, get_limit
