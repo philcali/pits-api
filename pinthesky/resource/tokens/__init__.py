@@ -54,6 +54,7 @@ def create_token(data_tokens):
         }
     )
 
+
 @api.route('/tokens/:token_id', methods=['DELETE'])
 def delete_token(data_tokens, token_id):
     data_tokens.delete(request.account_id(), item_id=token_id)
