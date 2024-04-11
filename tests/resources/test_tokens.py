@@ -24,5 +24,10 @@ def test_tokens(tokens):
     assert create.body['expiresIn'] == TEST_TIME + (10 * 1000)
 
     assert tokens(f'/{create.body["id"]}').body == create.body
-
     assert tokens().body['items'][0] == create.body
+
+    other = tokens(method="POST")
+    assert other.code == 200
+    assert other.body['expiresIn'] == TEST_TIME + (60 * 1000)
+
+    assert tokens(f'/{create.body["id"]}', method="DELETE").code == 204

@@ -37,7 +37,9 @@ def get_token(token_id, data_tokens):
 
 @api.route('/tokens', methods=['POST'])
 def create_token(data_tokens):
-    input = {} if request.body == "" else json.loads(request.body)
+    input = {}
+    if request.body is not None and request.body != "":
+        input = json.loads(request.body)
     timeout = input.get('timeoutInSeconds', DEFAULT_TIMEOUT_SECONDS)
     expires_in = floor(time.time()) + (timeout * 1000)
     return data_tokens.create(
@@ -51,3 +53,8 @@ def create_token(data_tokens):
             }
         }
     )
+
+@api.route('/tokens/:token_id', methods=['DELETE'])
+def delete_token(data_tokens, token_id):
+    data_tokens.delete(request.account_id(), item_id=token_id)
+    response.status_code = 204
