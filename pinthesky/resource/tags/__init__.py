@@ -144,6 +144,7 @@ def tag_videos(tag_video_data, video_tag_data, tag_name):
                 'duration': video['duration'],
                 'expiresIn': video['expiresIn'],
                 'createTime': create_time,
+                'updateTime': create_time,
                 'GS1-PK': tag_video_data.make_hash_key(
                     request.account_id(),
                     tag_name
