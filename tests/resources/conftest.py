@@ -93,6 +93,14 @@ def tokens(table):
 
 
 @pytest.fixture(scope="module")
+def connections(table):
+    assert table.name == 'Pits'
+    from pinthesky.resource import connections
+
+    return Resources(connections)
+
+
+@pytest.fixture(scope="module")
 def cameras(table):
     assert table.name == 'Pits'
     from pinthesky.resource import cameras
