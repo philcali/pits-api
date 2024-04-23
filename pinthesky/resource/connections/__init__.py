@@ -1,7 +1,13 @@
+import boto3
+import logging
+from botocore.exceptions import ClientError
 from ophis.globals import app_context, request, response
 from pinthesky.database import DataSessions, DataConnections
 from pinthesky.resource.helpers import create_query_params
 from pinthesky import api
+
+
+logger = logging.getLogger(__name__)
 
 
 app_context.inject('connections', DataConnections())
@@ -33,6 +39,28 @@ def get_connection(connectionId, connections):
             'message': f'Connection {connectionId} was not found'
         }
     return resp
+
+
+@api.route('/connections/:connectionId', methods=['DELETE'])
+def delete_connection(connectionId, connections):
+    resp = get_connection(connectionId, connections)
+    if response.status_code == 404:
+        response.status_code = 204
+        return
+    management = boto3.client(
+        'apigatewaymanagementapi',
+        endpoint_url=resp['managementEndpoint'])
+    try:
+        management.delete_connection(
+            ConnectionId=connectionId,
+        )
+        logger.info(f'Successfully disconnected {connectionId}')
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'GoneException':
+            logger.warning(f"Connection {connectionId} is already gone")
+        else:
+            raise
+    response.status_code = 204
 
 
 @api.route('/connections/:connectionId/sessions')
