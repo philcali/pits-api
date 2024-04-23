@@ -67,7 +67,9 @@ def test_tag_crud_workflow(tags, videos):
             'motionVideo': title,
             'thingName': 'PitsCamera1',
             'duration': 30,
-            'expiresIn': floor(time())
+            'expiresIn': floor(time()),
+            'createTime': video['createTime'],
+            'updateTime': video['updateTime'],
         })
     assert tags('/Favorites/videos', method="POST", body={
         'videos': [video]

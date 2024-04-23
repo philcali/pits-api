@@ -1,5 +1,4 @@
 from ophis.database import Repository
-from ophis.token import EncryptedTokenMarshaller
 
 
 class Groups(Repository):
@@ -103,7 +102,7 @@ class DataTokens(Repository):
 
 
 class DataConnections(Repository):
-    def __init__(self, table=None)-> None:
+    def __init__(self, table=None) -> None:
         super().__init__(type="DataConnections", table=table, fields_to_keys={
             'connectionId': 'SK'
         })

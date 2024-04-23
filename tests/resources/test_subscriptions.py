@@ -41,7 +41,7 @@ def created_subs():
                 'Error': {
                     'Code': 'NotAuthorized'
                 }
-            }, "sns:GetSubscriptionAttrinutes")
+            }, "sns:GetSubscriptionAttributes")
         elif id in created_subs:
             subscriber = MagicMock()
             return subscriber
